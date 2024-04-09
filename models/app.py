@@ -14,17 +14,6 @@ async def process_image(image: UploadFile = File(...)):
     return {"result": "Processed image"}
 
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    """
-    Handles a GET-operation to get favicon.ico.
-
-    :return: The favicon.ico.
-    :rtype: FileResponse
-    """
-    return FileResponse("/favicon.ico")
-
-
 if __name__ == "__main__":
     import uvicorn
 
