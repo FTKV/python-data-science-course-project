@@ -133,9 +133,11 @@ class Rate(IdAbstract, CreatedAtUpdatedAtAbstract):
         )
     )
     user: Mapped["User"] = relationship("User", back_populates="rates")
-
     rate_details: Mapped[List["RateDetail"]] = relationship(
         "RateDetail", back_populates="rate"
+    )
+    reservations: Mapped[List["Reservation"]] = relationship(
+        "Reservation", back_populates="rate"
     )
 
 
@@ -243,10 +245,20 @@ class Reservation(IdAbstract, CreatedAtUpdatedAtAbstract):
             UUID(as_uuid=True), ForeignKey("cars.id", ondelete="SET NULL")
         )
     )
+    rate_id: Mapped[UUID | int] = (
+        mapped_column(Integer, ForeignKey("rates.id", ondelete="SET NULL"))
+        if settings.test
+        else mapped_column(
+            UUID(as_uuid=True), ForeignKey("rates.id", ondelete="SET NULL")
+        )
+    )
     user: Mapped["User"] = relationship("User", back_populates="reservations")
     car: Mapped["Car"] = relationship("Car", back_populates="reservations")
-    events: Mapped[List["Event"]] = relationship("Event", back_populates="reservations")
-    rates: Mapped[List["Rate"]] = relationship("Rate", back_populates="reservations")
+    rate: Mapped["Rate"] = relationship("Rate", back_populates="reservations")
+    events: Mapped[List["Event"]] = relationship("Event", back_populates="reservation")
+    financial_transactions: Mapped[List["FinancialTransaction"]] = relationship(
+        "FinancialTransaction", back_populates="reservation"
+    )
 
 
 class TrxType(enum.Enum):
