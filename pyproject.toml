@@ -26,7 +26,6 @@ libgravatar = "^1.0.4"
 cloudinary = "^1.37.0"
 qrcode = "^7.4.2"
 psycopg2-binary = "^2.9.9"
-alembic-postgresql-enum = "^1.1.2"
 
 [tool.poetry.group.dev.dependencies]
 sphinx = "^7.2.6"
