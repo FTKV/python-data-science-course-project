@@ -2,16 +2,38 @@
 Module of parking_spot' CRUD
 """
 
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.parking_spot import ParkingSpot
-from sqlalchemy import select, func
+from sqlalchemy import select, UUID, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
-from src.schemas.parking_spot import ParkingSpotDB, ParkingSpotUpdate
+from src.database.models import User, ParkingSpot
+from src.schemas.parking_spot import ParkingSpotModel, ParkingSpotDB, ParkingSpotUpdate
 
-async def get_parking_spot_by_id(db: AsyncSession, parking_spot_id: int) -> Optional[ParkingSpotDB]:
+
+async def create_parking_spot(
+    body: ParkingSpotModel, user: User, session: AsyncSession
+) -> ParkingSpot:
+    """
+    Create a new parking spot in the database.
+
+    Args:
+        body (ParkingSpotModel): The parking spot object to be created.
+        user (User):
+        session (AsyncSession): An asynchronous database session.
+
+    Returns:
+        ParkingSpot: The created parking spot object.
+    """
+    parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
+    session.add(parking_spot)
+    await session.commit()
+    return parking_spot
+
+
+async def get_parking_spot_by_id(
+    db: AsyncSession, parking_spot_id: int
+) -> Optional[ParkingSpotDB]:
     """
     Retrieve a parking spot by its ID.
 
@@ -21,31 +43,16 @@ async def get_parking_spot_by_id(db: AsyncSession, parking_spot_id: int) -> Opti
 
     Returns:
         Optional[ParkingSpotDB]: The parking spot, if found, otherwise None.
-    """ 
+    """
     async with db() as session:
         stmt = select(ParkingSpotDB).filter(ParkingSpotDB.id == parking_spot_id)
         parking_spot = await session.execute(stmt)
         return parking_spot.scalar()
 
 
-async def create_parking_spot(db: AsyncSession, parking_spot: ParkingSpotDB) -> ParkingSpotDB:
-    """
-    Create a new parking spot in the database.
-
-    Args:
-        db (AsyncSession): An asynchronous database session.
-        parking_spot (ParkingSpotDB): The parking spot object to be created.
-
-    Returns:
-        ParkingSpotDB: The created parking spot object.
-    """ 
-    async with db() as session:
-        session.add(parking_spot)
-        await session.commit()
-        return parking_spot
-
-
-async def update_parking_spot(db: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate) -> Optional[ParkingSpotDB]:
+async def update_parking_spot(
+    db: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate
+) -> Optional[ParkingSpotDB]:
     """
     Update an existing parking spot in the database.
 
@@ -70,7 +77,9 @@ async def update_parking_spot(db: AsyncSession, parking_spot_id: int, new_parkin
     return None
 
 
-async def update_parking_spot_available_status(db: AsyncSession, parking_spot_id: int, available: bool) -> Optional[ParkingSpotDB]:
+async def update_parking_spot_available_status(
+    db: AsyncSession, parking_spot_id: int, available: bool
+) -> Optional[ParkingSpotDB]:
     """
     Update the availability status of a parking spot in the database.
 
