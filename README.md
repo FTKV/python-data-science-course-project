@@ -15,7 +15,7 @@ Steps to install the project in a standart way:
 4. Create, fill with settings file `.env` with following format:
 
 ```
-API_NAME=...
+API_NAME=Caras/MachineFlow
 API_PROTOCOL=http
 API_HOST=127.0.0.1
 API_PORT=8000
@@ -57,6 +57,11 @@ MAIL_FROM_NAME=${API_NAME}
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
+
+TENSORFLOW_CONTAINER_NAME=tensorflow-model
+TENSORFLOW_MODEL_PATH=./models
+TENSORFLOW_DOCKERFILE_NAME=dockerfile_model
+TENSORFLOW_PORT=8001
 
 TEST=False
 ```
