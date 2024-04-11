@@ -15,4 +15,13 @@ services:
     command:
       - --requirepass ${REDIS_PASSWORD}
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "${REDIS_PORT}:${REDIS_PORT}"  
+  tensorflow:
+    container_name: ${TENSORFLOW_CONTAINER_NAME}
+    build:
+      context: ${TENSORFLOW_MODEL_PATH}
+      dockerfile: ${TENSORFLOW_DOCKERFILE_NAME}
+    ports:
+      - "${TENSORFLOW_PORT}:${TENSORFLOW_PORT}"
+
+  

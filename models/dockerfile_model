@@ -1,0 +1,11 @@
+FROM tensorflow/tensorflow:latest
+# Install dependencies for opencv
+RUN apt update && apt install -y libgl1
+# Install dependencies for the model
+RUN pip install opencv-python pillow fastapi uvicorn python-multipart
+# copy to container
+COPY . /app
+WORKDIR /app
+EXPOSE 8001
+# Exec
+CMD ["python", "model_main.py"]
