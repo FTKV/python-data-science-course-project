@@ -106,6 +106,7 @@ class Car(IdAbstract, CreatedAtUpdatedAtAbstract):
     model: Mapped[str] = mapped_column(String(128), nullable=True)
     color: Mapped[str] = mapped_column(String(32), nullable=True)
     description: Mapped[str] = mapped_column(String(1024), nullable=True)
+    is_blacklisted: Mapped[bool] = mapped_column(Boolean, default=False)
     user_id: Mapped[UUID | int] = (
         mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
         if settings.test
