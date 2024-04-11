@@ -1,3 +1,8 @@
+"""
+Module of parking_spot' schemas
+"""
+
+
 from typing import Annotated, Optional
 from pydantic import BaseModel, Field, ConfigDict, UUID4
 
@@ -12,14 +17,19 @@ class ParkingSpotModel(BaseModel):
     is_out_of_service: bool = False
 
 
+@as_form
 class ParkingSpotCreate(ParkingSpotModel):
     pass
 
 
+@as_form
 class ParkingSpotUpdate(ParkingSpotModel):
-    pass
+    title: str = Field(min_length=1, max_length=32)
+    is_available: bool = True
+    is_out_of_service: bool = False
 
 
+@as_form
 class ParkingSpotDB(ParkingSpotModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -28,8 +38,10 @@ class ParkingSpotDB(ParkingSpotModel):
     description: Optional[str]
     is_available: bool
     is_out_of_service: bool
-    user_id: UUID4 | int
+    user_id: Optional[UUID4 | int]
 
+
+@as_form
 class ParkingSpotResponse(BaseModel):
     user: ParkingSpotDB
     message: str = "Parking Spot Info"
