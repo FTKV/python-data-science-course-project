@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "temp"
+name = "Caras/MachineFlow"
 version = "0.1.0"
 description = ""
 authors = ["temp"]
