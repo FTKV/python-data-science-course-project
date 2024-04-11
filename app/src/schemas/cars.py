@@ -18,6 +18,7 @@ class CarModel(BaseModel):
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    user_id: UUID4 | int | None = None
 
     @classmethod
     def __get_validators__(cls):
@@ -30,6 +31,12 @@ class CarModel(BaseModel):
         return value
 
 
+class CarUpdateModel(BaseModel):
+    model: Annotated[str | None, Field(max_length=128)] = None
+    color: Annotated[str | None, Field(max_length=32)] = None
+    description: Annotated[str | None, Field(max_length=1024)] = None
+
+
 class CarResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -38,6 +45,7 @@ class CarResponse(BaseModel):
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    is_blacklisted: bool
     created_at: datetime
     updated_at: datetime
     user_id: UUID4 | int | None = None
