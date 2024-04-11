@@ -97,6 +97,8 @@ async def update_car(
             car.color = body.color
         if body.description:
             car.description = body.description
+        if body.user_id:
+            car.user_id = body.user_id
         await session.commit()
     return car
 
