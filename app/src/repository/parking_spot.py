@@ -19,7 +19,7 @@ async def create_parking_spot(
 
     Args:
         body (ParkingSpotModel): The parking spot object to be created.
-        user (User):
+        user (User): The user
         session (AsyncSession): An asynchronous database session.
 
     Returns:
@@ -32,49 +32,56 @@ async def create_parking_spot(
 
 
 async def get_parking_spot_by_id(
-    db: AsyncSession, parking_spot_id: int
-) -> Optional[ParkingSpotDB]:
+    session: AsyncSession, parking_spot_id: int
+) -> ParkingSpot | None:
     """
     Retrieve a parking spot by its ID.
 
     Args:
-        db (AsyncSession): An asynchronous database session.
+        session (AsyncSession): An asynchronous database session.
         parking_spot_id (int): The ID of the parking spot to retrieve.
 
     Returns:
-        Optional[ParkingSpotDB]: The parking spot, if found, otherwise None.
+        Union[ParkingSpot, None]: The parking spot, if found, otherwise None.
     """
-    async with db() as session:
-        stmt = select(ParkingSpotDB).filter(ParkingSpotDB.id == parking_spot_id)
-        parking_spot = await session.execute(stmt)
-        return parking_spot.scalar()
+    stmt = select(ParkingSpot).filter(ParkingSpot.user_id == parking_spot_id)
+    parking_spot = await session.execute(stmt)
+    return parking_spot
 
 
 async def update_parking_spot(
-    db: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate
-) -> Optional[ParkingSpotDB]:
+    session: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate
+) -> ParkingSpot:
     """
-    Update an existing parking spot in the database.
+    Update a parking spot in the database.
 
     Args:
-        db (AsyncSession): An asynchronous database session.
+        session (AsyncSession): An asynchronous database session.
         parking_spot_id (int): The ID of the parking spot to update.
         new_parking_spot (ParkingSpotUpdate): The updated parking spot information.
 
     Returns:
-        Optional[ParkingSpotDB]: The updated parking spot object, if found, otherwise None.
+        Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
     """
-    async with db() as session:
-        parking_spot = await get_parking_spot_by_id(parking_spot_id)
-        if parking_spot:
-            parking_spot.title = new_parking_spot.title
-            parking_spot.description = new_parking_spot.description
-            parking_spot.is_available = new_parking_spot.is_available
-            parking_spot.is_out_of_service = new_parking_spot.is_out_of_service
-            await session.commit()
-            await session.refresh(parking_spot)
-            return parking_spot
+    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    if parking_spot:
+        parking_spot.title = new_parking_spot.title
+        parking_spot.description = new_parking_spot.description
+        parking_spot.is_available = new_parking_spot.is_available
+        parking_spot.is_out_of_service = new_parking_spot.is_out_of_service
+        await session.commit()
+        await session.refresh(parking_spot)
+        return parking_spot
     return None
+
+
+
+
+
+
+
+
+
 
 
 async def update_parking_spot_available_status(
