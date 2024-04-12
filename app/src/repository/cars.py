@@ -13,7 +13,16 @@ from src.services.cloudinary import cloudinary_service
 
 
 async def create_car(data: CarModel, session: AsyncSession) -> Car:
-    # TODO recognizing picture into text
+    """
+    Creates a new car.
+
+    :param body: The data for the car to create.
+    :type body: FinancialTransactionModel
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The newly created car.
+    :rtype: Car
+    """
     car = Car(**data.model_dump())
     session.add(car)
     await session.commit()
@@ -21,34 +30,44 @@ async def create_car(data: CarModel, session: AsyncSession) -> Car:
     return car
 
 
-async def read_cars(session: AsyncSession) -> ScalarResult:
+async def read_cars(offset: int, limit: int, session: AsyncSession) -> ScalarResult:
     """
     Gets all cars.
 
+    :param offset: The number of cars to skip.
+    :type offset: int
+    :param limit: The maximum number of cars to return.
+    :type limit: int
     :param session: The database session.
     :type session: AsyncSession
     :return: The ScalarResult with the list of cars.
     :rtype: ScalarResult
     """
     stmt = select(Car)
+    stmt = stmt.offset(offset).limit(limit)
     cars = await session.execute(stmt)
     return cars.scalars()
 
 
 async def read_cars_by_user_id(
-    user_id: UUID | int, session: AsyncSession
+    user_id: UUID | int, offset: int, limit: int, session: AsyncSession
 ) -> ScalarResult:
     """
     Gets cars by user with the specified id.
 
     :param user_id: The ID of the user to get cars.
     :type user_id: UUID | int
+    :param offset: The number of cars to skip.
+    :type offset: int
+    :param limit: The maximum number of cars to return.
+    :type limit: int
     :param session: The database session.
     :type session: AsyncSession
     :return: The ScalarResult with the list of cars.
     :rtype: ScalarResult
     """
     stmt = select(Car).filter(Car.user_id == user_id)
+    stmt = stmt.offset(offset).limit(limit)
     cars = await session.execute(stmt)
     return cars.scalars()
 
