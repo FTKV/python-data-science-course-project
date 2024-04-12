@@ -56,7 +56,7 @@ async def get_reservations_by_user_id(session: AsyncSession, user_id: Union[UUID
     """
     query = select(Reservation).filter(Reservation.user_id == user_id)
     result = await session.execute(query)
-    return result.scalars().all()
+    return result.scalars()
 
 async def get_all_reservations(session: AsyncSession):
     """
@@ -70,7 +70,7 @@ async def get_all_reservations(session: AsyncSession):
     """
     query = select(Reservation)
     result = await session.execute(query)
-    return result.scalars().all()
+    return result.scalars()
 
 async def update_reservation(
     session: AsyncSession, reservation_id: int, reservation_data: ReservationUpdateModel
