@@ -1,5 +1,5 @@
 """
-Module of parking_spot' CRUD
+Module of parking spots' CRUD
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
