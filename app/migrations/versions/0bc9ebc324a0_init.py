@@ -1,8 +1,8 @@
 """'Init'
 
-Revision ID: 6d5c677193be
+Revision ID: 0bc9ebc324a0
 Revises: 
-Create Date: 2024-04-11 17:41:00.616229
+Create Date: 2024-04-12 14:54:43.935545
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '6d5c677193be'
+revision: str = '0bc9ebc324a0'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -48,7 +48,7 @@ def upgrade() -> None:
     sa.Column('color', sa.String(length=32), nullable=True),
     sa.Column('description', sa.String(length=1024), nullable=True),
     sa.Column('is_blacklisted', sa.Boolean(), nullable=False),
-    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -119,8 +119,6 @@ def upgrade() -> None:
     sa.Column('parking_spot_id', sa.UUID(), nullable=False),
     sa.Column('reservation_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['parking_spot_id'], ['parking_spots.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['reservation_id'], ['reservations.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
@@ -133,8 +131,6 @@ def upgrade() -> None:
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('reservation_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['reservation_id'], ['reservations.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')

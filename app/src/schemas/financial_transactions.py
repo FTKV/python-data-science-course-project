@@ -38,3 +38,15 @@ class FinancialTransactionModel(BaseModel):
         v["debit"] = round(debit, 2)
         v["credit"] = round(credit, 2)
         return v
+
+
+class FinancialTransactionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID4 | int
+    trx_date: datetime
+    trx_type: TrxType
+    debit: float
+    credit: float
+    user_id: UUID4 | int
+    reservation_id: UUID4 | int
