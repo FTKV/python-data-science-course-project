@@ -1,5 +1,5 @@
 """
-Module of parking_spot' schemas
+Module of parking spots' schemas
 """
 
 from datetime import datetime
@@ -12,7 +12,7 @@ class ParkingSpotModel(BaseModel):
     description: Annotated[str | None, Field(max_length=1024)] = None
 
 
-class ParkingSpotUpdate(ParkingSpotModel):
+class ParkingSpotUpdate(BaseModel):
     title: Annotated[str | None, Field(min_length=1, max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
 
