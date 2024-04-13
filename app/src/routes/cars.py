@@ -7,14 +7,21 @@ from typing import List
 from pydantic import UUID4
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from fastapi.responses import FileResponse
+from httpx import AsyncClient
 from redis.asyncio.client import Redis
 from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.conf.config import settings
 from src.database.connect_db import get_session, get_redis_db1
 from src.database.models import User, Role
-from src.repository import comments as repository_comments
-from app.src.repository import cars as repository_cars
+from src.repository import cars as repository_cars
+from src.schemas.cars import (
+    CarUnrecognizedPlateModel,
+    CarRecognizedPlateModel,
+    CarUpdateModel,
+    CarResponse,
+)
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 from src.services.qr_code import generate_qr_code
@@ -26,36 +33,40 @@ allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-# @router.post(
-#     "",
-#     response_model=ImageDb,
-#     status_code=status.HTTP_201_CREATED,
-#     dependencies=[Depends(allowed_operations_for_self)],
-# )
-# async def create_image(
-#     data: ImageModel = Depends(ImageModel.as_form),
-#     user: User = Depends(auth_service.get_current_user),
-#     session: AsyncSession = Depends(get_session),
-#     cache: Redis = Depends(get_redis_db1),
-# ):
-#     """
-#     Handles a POST-operation to "" images subroute and create an image.
+@router.post(
+    "",
+    response_model=CarResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(allowed_operations_for_self)],
+)
+async def read_or_create_car_with_unrecognized_plate(
+    data: CarUnrecognizedPlateModel = Depends(CarUnrecognizedPlateModel.as_form),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Handles a POST-operation to "" car subroute and create a car.
 
-#     :param file: The uploaded file to create avatar from.
-#     :type file: UploadFile
-#     :param data: The data for the image to create.
-#     :type data: ImageCreateForm
-#     :param user: The user who creates the image.
-#     :type user: User
-#     :param session: Get the database session
-#     :type AsyncSession: The current session.
-#     :param cache: The Redis client.
-#     :type cache: Redis
-#     :return: Newly created image of the current user.
-#     :rtype: Image
-#     """
-#     image = await repository_images.create_image(data, user, session, cache)
-#     return image
+    :param file: The uploaded file to create avatar from.
+    :type file: UploadFile
+    :param data: The data for the image to create.
+    :type data: ImageCreateForm
+    :param user: The user who creates the image.
+    :type user: User
+    :param session: Get the database session
+    :type AsyncSession: The current session.
+    :return: Newly created car.
+    :rtype: Car
+    """
+    client = AsyncClient(
+        base_url=f"{settings.api_protocol}://{settings.api_host}:{settings.tensorflow_port}",
+    )
+    response = await client.post(
+        "/process_image",
+        files={"img_file": data.plate.file},
+    )
+    data.plate = response.json().get("result")
+    car = await repository_cars.create_car(data, session)
+    return car
 
 
 # @router.get(

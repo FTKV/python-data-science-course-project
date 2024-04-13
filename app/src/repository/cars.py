@@ -8,22 +8,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf.config import settings
 from src.database.models import User, Car
-from src.schemas.cars import CarModel, CarUpdateModel
+from src.schemas.cars import CarRecognizedPlateModel, CarUpdateModel
 from src.services.cloudinary import cloudinary_service
 
 
-async def create_car(data: CarModel, session: AsyncSession) -> Car:
+async def create_car(body: CarRecognizedPlateModel, session: AsyncSession) -> Car:
     """
     Creates a new car.
 
-    :param body: The data for the car to create.
+    :param body: The body for the car to create.
     :type body: FinancialTransactionModel
     :param session: The database session.
     :type session: AsyncSession
     :return: The newly created car.
     :rtype: Car
     """
-    car = Car(**data.model_dump())
+    car = Car(**body.model_dump())
     session.add(car)
     await session.commit()
     await session.refresh(car)
@@ -72,7 +72,7 @@ async def read_cars_by_user_id(
     return cars.scalars()
 
 
-async def read_car(
+async def read_car_by_car_id(
     car_id: UUID | int,
     session: AsyncSession,
 ) -> Car | None:
@@ -87,6 +87,25 @@ async def read_car(
     :rtype: Car | None
     """
     stmt = select(Car).filter(Car.id == car_id)
+    car = await session.execute(stmt)
+    return car.scalar()
+
+
+async def read_car_by_plate(
+    plate: str,
+    session: AsyncSession,
+) -> Car | None:
+    """
+    Gets a car with the specified plate.
+
+    :param plate: The plate of the car to get.
+    :type plate: str
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The car with the specified plate, or None if it does not exist.
+    :rtype: Car | None
+    """
+    stmt = select(Car).filter(Car.plate == plate)
     car = await session.execute(stmt)
     return car.scalar()
 

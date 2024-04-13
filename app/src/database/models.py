@@ -108,13 +108,21 @@ class Car(IdAbstract, CreatedAtUpdatedAtAbstract):
     description: Mapped[str] = mapped_column(String(1024), nullable=True)
     is_blacklisted: Mapped[bool] = mapped_column(Boolean, default=False)
     user_id: Mapped[UUID | int] = (
-        mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+        mapped_column(
+            Integer,
+            ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=True,
+        )
         if settings.test
         else mapped_column(
-            UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
+            UUID(as_uuid=True),
+            ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=True,
         )
     )
-    user: Mapped["User"] = relationship("User", back_populates="cars")
+    user: Mapped["User"] = relationship(
+        "User", back_populates="cars", foreign_keys=[user_id]
+    )
     reservations: Mapped[List["Reservation"]] = relationship(
         "Reservation", back_populates="car"
     )
@@ -173,7 +181,7 @@ class Status(enum.Enum):
     CHECKED_OUT: str = "Checked Out"
 
 
-class Event(IdAbstract, CreatedAtUpdatedAtAbstract):
+class Event(IdAbstract):
     __tablename__ = "events"
     __mapper_args__ = {"eager_defaults": True}
     event_date: Mapped[datetime] = mapped_column(
@@ -267,7 +275,7 @@ class TrxType(enum.Enum):
     CHARGE: str = "Charge"
 
 
-class FinancialTransaction(IdAbstract, CreatedAtUpdatedAtAbstract):
+class FinancialTransaction(IdAbstract):
     __tablename__ = "financial_transactions"
     __mapper_args__ = {"eager_defaults": True}
     trx_date: Mapped[datetime] = mapped_column(
