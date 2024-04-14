@@ -9,7 +9,7 @@ from pydantic import (
     BaseModel,
     UUID4,
 )
-from typing import Optional, Union
+from typing import Optional
 
 class ReservationModel(BaseModel):
     
@@ -18,9 +18,9 @@ class ReservationModel(BaseModel):
     end_date: Optional[datetime]
     debit: Optional[float]
     credit: Optional[float]
-    user_id: Optional[Union[UUID4, int]]
-    car_id: Union[UUID4, int]
-    rate_id: Union[UUID4, int]
+    user_id: UUID4 | int | None = None
+    car_id: UUID4 | int | None = None
+    rate_id: UUID4 | int 
     
 class ReservationUpdateModel(BaseModel):
     resv_status: Optional[Status]
@@ -28,6 +28,6 @@ class ReservationUpdateModel(BaseModel):
     end_date: Optional[datetime]
     debit: Optional[float]
     credit: Optional[float]
-    user_id: Optional[Union[UUID4, int]]
-    car_id: Optional[Union[UUID4, int]]
-    rate_id: Optional[Union[UUID4, int]]
+    user_id: Optional[UUID4]
+    car_id: Optional[UUID4]
+    rate_id: Optional[UUID4]
