@@ -46,7 +46,9 @@ async def get_reservation_by_id(reservation_id: UUID | int, session: AsyncSessio
     return result.scalar()
 
 
-async def get_reservations_by_user_id(user_id: UUID | int, session: AsyncSession):
+async def get_reservations_by_user_id(
+    user_id: UUID | int, offset: int, limit: int, session: AsyncSession
+):
     """
     Retrieve all reservations associated with a specific user from the database.
 
@@ -57,12 +59,13 @@ async def get_reservations_by_user_id(user_id: UUID | int, session: AsyncSession
     Returns:
         List[Reservation]: A list of reservations associated with the user.
     """
-    query = select(Reservation).filter(Reservation.user_id == user_id)
-    result = await session.execute(query)
+    stmt = select(Reservation).filter(Reservation.user_id == user_id)
+    stmt = stmt.offset(offset).limit(limit)
+    result = await session.execute(stmt)
     return result.scalars()
 
 
-async def get_all_reservations(session: AsyncSession):
+async def get_all_reservations(offset: int, limit: int, session: AsyncSession):
     """
     Retrieve all reservations from the database.
 
@@ -72,8 +75,9 @@ async def get_all_reservations(session: AsyncSession):
     Returns:
         List[Reservation]: A list of all reservations in the database.
     """
-    query = select(Reservation)
-    result = await session.execute(query)
+    stmt = select(Reservation)
+    stmt = stmt.offset(offset).limit(limit)
+    result = await session.execute(stmt)
     return result.scalars()
 
 
@@ -93,7 +97,7 @@ async def update_reservation(
     Returns:
         Union[Reservation, None]: The updated reservation object, if found, otherwise None.
     """
-    reservation = await get_reservation_by_id(session, reservation_id)
+    reservation = await get_reservation_by_id(reservation_id, session)
     if reservation:
         for key, value in reservation_data.model_dump().items():
             if hasattr(reservation, key):
