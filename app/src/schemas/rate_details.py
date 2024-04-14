@@ -1,45 +1,44 @@
-from datetime import datetime, time, timedelta
-from typing import List
+from datetime import date, time
+from typing import Optional
+from pydantic import BaseModel, Field, UUID4, ConfigDict
 
-from pydantic import BaseModel, Field, UUID4
-from apscheduler.schedulers.background import BackgroundScheduler
+class RateDetailInput(BaseModel):
+    start_date: date = Field(..., title="Start Date")
+    end_date: date = Field(..., title="End Date")
+    start_hour: time = Field(..., title="Start Hour")
+    end_hour: time = Field(..., title="End Hour")
+    amount: float = Field(..., title="Amount")
+    user_id: Optional[UUID4] = Field(None, title="User ID")
 
-from .rates import RateModel
+    def to_model(self) -> dict:
+        return self.dict()
 
-class RateDetailModel(BaseModel):
-    rate_id: int
-    day_of_week: int
-    start_time: time
-    end_time: time
-    hourly_rate: int
-    daily_rate: int
+class RateDetailUpdate(BaseModel):
+    start_date: Optional[date] = Field(None, title="Start Date")
+    end_date: Optional[date] = Field(None, title="End Date")
+    start_hour: Optional[time] = Field(None, title="Start Hour")
+    end_hour: Optional[time] = Field(None, title="End Hour")
+    amount: Optional[float] = Field(None, title="Amount")
+    user_id: Optional[UUID4] = Field(None, title="User ID")
+
+    def update_model(self, model: 'RateDetailResponse') -> 'RateDetailResponse':
+        update_data = self.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(model, field, value)
+        return model
+
+class RateDetailResponse(BaseModel):
+    id: UUID4 | int
+    start_date: date = Field(..., title="Start Date")
+    end_date: date = Field(..., title="End Date")
+    start_hour: time = Field(..., title="Start Hour")
+    end_hour: time = Field(..., title="End Hour")
+    amount: float = Field(..., title="Amount")
+    user_id: UUID4 | int | None = None
 
     class Config:
         orm_mode = True
 
-
-    def update_tariff(self, hourly_rate: int, daily_rate: int):
-        """Update tariff rates"""
-        self.hourly_rate = hourly_rate
-        self.daily_rate = daily_rate
-
-    def update_duration(self, start_time: time, end_time: time):
-        """Update parking duration"""
-        self.start_time = start_time
-        self.end_time = end_time
-
-    def update_price(self, hourly_rate: int, daily_rate: int):
-        """Update hourly and daily rates"""
-        self.hourly_rate = hourly_rate
-        self.daily_rate = daily_rate
-
-    def get_applicable_rate(self, current_time: time) -> int:
-        """Get applicable rate based on the current time"""
-        if self.start_time <= current_time < self.end_time:
-            return self.hourly_rate
-        else:
-            return 0
-
-    def get_current_rate(self) -> int:
-        """Get the current rate for the parking"""
-        return self.hourly_rate  # Return the current hourly rate
+    @classmethod
+    def from_model(cls, model) -> 'RateDetailResponse':
+        return cls(**model.dict())
