@@ -15,6 +15,7 @@ from src.repository.parking_spots import (
     update_parking_spot_available_status,
     delete_parking_spot,
     get_all_parking_spots,
+    update_parking_spot_service_status,
 )
 from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotResponse, ParkingSpotUpdate
 
@@ -154,6 +155,41 @@ async def update_parking_spot_availability_route(
     if not updated_parking_spot:
         raise HTTPException(status_code=404, detail="Parking spot not found")
     return {"user": updated_parking_spot, "message": "Parking spot availability updated successfully"}
+
+
+@router.patch("/{parking_spot_id}/service_status", 
+              response_model=ParkingSpotResponse,
+              dependencies=[Depends(allowed_operations_for_moderate)]
+              )
+async def update_parking_spot_service_status_route(
+    parking_spot_id: int,
+    out_of_service: bool,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Update the service status of a parking spot by ID.
+
+    This endpoint allows administrators to update the service status (in-service or out-of-service)
+    of a parking spot by providing its ID and the new service status in the request body.
+    Only users with specific permissions (determined by `allowed_operations_for_moderate`) have access
+    to this endpoint.
+
+    Args:
+        parking_spot_id (int): The ID of the parking spot to update.
+        out_of_service (bool): The new service status of the parking spot.
+        session (AsyncSession, optional): The asynchronous session to interact with
+            the database. Defaults to Depends(get_session).
+
+    Returns:
+        dict: The updated parking spot along with a success message.
+
+    Raises:
+        HTTPException: If the parking spot with the provided ID is not found.
+    """
+    updated_parking_spot = await update_parking_spot_service_status(session, parking_spot_id, out_of_service)
+    if not updated_parking_spot:
+        raise HTTPException(status_code=404, detail="Parking spot not found")
+    return {"user": updated_parking_spot, "message": "Parking spot service status updated successfully"}
 
 
 @router.delete("/{parking_spot_id}", 
