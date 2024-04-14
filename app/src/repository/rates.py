@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.database.models import Rate as RateModel
-from src.schemas.rate import RateCreate, RateUpdate
+from src.schemas.rates import RateCreate, RateUpdate
 
 
 class RateRepository:
@@ -9,7 +9,9 @@ class RateRepository:
         self.session = session
 
     async def get_rate_by_id(self, rate_id: int) -> RateModel:
-        result = await self.session.execute(select(RateModel).filter(RateModel.id == rate_id))
+        result = await self.session.execute(
+            select(RateModel).filter(RateModel.id == rate_id)
+        )
         return result.scalars().first()
 
     async def create_rate(self, rate: RateCreate) -> RateModel:
