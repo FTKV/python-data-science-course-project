@@ -1,33 +1,93 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from src.database.models import Rate as RateModel
-from src.schemas.rates import RateCreate, RateUpdate
+from src.database.models import Rate
+from src.schemas.rates import RateCreate, RateUpdate, RateResponse
+from typing import List
 
 
-class RateRepository:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+async def create_rate(body: RateCreate, session: AsyncSession) -> Rate:
+    """
+    Creates a new rate.
+    :param body: The body for the rate to create.
+    :type body: RateCreate
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The newly created rate.
+    :rtype: Rate
+    """
+    rate = Rate(**body.model_dump())
+    session.add(rate)
+    await session.commit()
+    await session.refresh(rate)
+    return rate
 
-    async def get_rate_by_id(self, rate_id: int) -> RateModel:
-        result = await self.session.execute(
-            select(RateModel).filter(RateModel.id == rate_id)
-        )
-        return result.scalars().first()
 
-    async def create_rate(self, rate: RateCreate) -> RateModel:
-        db_rate = RateModel(**rate.dict())
-        self.session.add(db_rate)
-        await self.session.commit()
-        return db_rate
+async def read_rates(offset: int, limit: int, session: AsyncSession) -> List[Rate]:
+    """
+    Gets all rates.
+    :param offset: The number of rates to skip.
+    :type offset: int
+    :param limit: The maximum number of rates to return.
+    :type limit: int
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The list of rates.
+    :rtype: List[Rate]
+    """
+    stmt = select(Rate).offset(offset).limit(limit)
+    rates = await session.execute(stmt)
+    return rates.scalars()
 
-    async def update_rate(self, rate_id: int, rate_update: RateUpdate) -> RateModel:
-        db_rate = await self.get_rate_by_id(rate_id)
-        for key, value in rate_update.dict(exclude_unset=True).items():
-            setattr(db_rate, key, value)
-        await self.session.commit()
-        return db_rate
 
-    async def delete_rate(self, rate_id: int) -> None:
-        db_rate = await self.get_rate_by_id(rate_id)
-        self.session.delete(db_rate)
-        await self.session.commit()
+async def read_rate_by_id(rate_id: int, session: AsyncSession) -> Rate | None:
+    """
+    Gets a rate by ID.
+    :param rate_id: The ID of the rate to get.
+    :type rate_id: int
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The rate with the specified ID, or None if it does not exist.
+    :rtype: Rate | None
+    """
+    stmt = select(Rate).filter(Rate.id == rate_id)
+    rate = await session.execute(stmt)
+    return rate.scalar()
+
+
+async def update_rate(
+    rate_id: int, body: RateUpdate, session: AsyncSession
+) -> Rate | None:
+    """
+    Updates a rate.
+    :param rate_id: The ID of the rate to update.
+    :type rate_id: int
+    :param body: The updated body for the rate.
+    :type body: RateUpdate
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The updated rate, or None if it does not exist.
+    :rtype: Rate | None
+    """
+    rate = await read_rate_by_id(rate_id, session)
+    if rate:
+        for key, value in body.model_dump().items():
+            setattr(rate, key, value)
+        await session.commit()
+    return rate
+
+
+async def delete_rate(rate_id: int, session: AsyncSession) -> Rate | None:
+    """
+    Deletes a rate.
+    :param rate_id: The ID of the rate to delete.
+    :type rate_id: int
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The deleted rate, or None if it does not exist.
+    :rtype: Rate | None
+    """
+    rate = await read_rate_by_id(rate_id, session)
+    if rate:
+        session.delete(rate)
+        await session.commit()
+    return rate
