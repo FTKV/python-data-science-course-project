@@ -5,31 +5,24 @@ Module of rates' schemas
 from typing import List
 from pydantic import BaseModel, Field, UUID4, conlist
 
-class RateDetail(BaseModel):
-    id: UUID4
-    rate_id: UUID4
-    detail: str
+class RateBase(BaseModel):
+    title: str = Field(..., title="Title", max_length=32)
+    description: str = Field(None, title="Description", max_length=1024)
+    is_daily: bool = Field(False, title="Is Daily")
 
-class Rate(BaseModel):
-    id: UUID4
-    title: str = Field(..., max_length=32)
-    description: Optional[str] = Field(None, max_length=1024)
-    is_daily: bool
+class RateCreate(RateBase):
     user_id: UUID4
-    rate_details: List[RateDetail] = []
+
+class RateUpdate(RateBase):
+    pass
+
+class RateResponse(BaseModel):
+    id: UUID4 | int
+    title: str = Field(..., title="Title", max_length=32)
+    description: str = Field(None, title="Description", max_length=1024)
+    is_daily: bool = Field(False, title="Is Daily")
+    rate_details: List['RateDetailResponse'] = []
 
     class Config:
         orm_mode = True
 
-
-class RateResponse(BaseModel):
-    id: UUID4 | int
-    title: str
-    description: str
-    start_date: datetime
-    end_date: datetime
-    hourly_rate: int
-    daily_rate: int
-    rate_details: List[RateDetailModel]
-    created_at: datetime
-    updated_at: datetime
