@@ -10,24 +10,26 @@ from pydantic import (
 )
 from typing import Optional
 
+from src.utils.as_form import as_form
 
+
+@as_form
 class ReservationModel(BaseModel):
 
     resv_status: Status
-    start_date: datetime
-    end_date: Optional[datetime]
-    debit: float
-    credit: float
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     user_id: UUID4 | int | None = None
     car_id: UUID4 | int
     rate_id: UUID4 | int
 
 
+@as_form
 class ReservationUpdateModel(BaseModel):
-    resv_status: Optional[Status]
-    start_date: Optional[datetime]
-    end_date: Optional[datetime]
-    debit: Optional[float]
-    credit: Optional[float]
-    user_id: Optional[UUID4]
-    rate_id: Optional[UUID4]
+    resv_status: Status | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    debit: float | None = None
+    credit: float | None = None
+    user_id: UUID4 | int | None = None
+    rate_id: UUID4 | int | None = None

@@ -52,6 +52,13 @@ async def read_or_create_car_with_unrecognized_plate(
     :rtype: Car
     """
     data.plate = await process_image(data.plate.file)
+    try:
+        data = CarRecognizedPlateModel(**data.model_dump())
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Car not found or license plate was recognized incorrectly",
+        )
     car = await repository_cars.read_car_by_plate(data.plate, session)
     if not car:
         car = await repository_cars.create_car(data, session)
@@ -83,6 +90,32 @@ async def read_or_create_car_with_recognized_plate(
     return car
 
 
+@router.get(
+    "",
+    response_model=List[CarResponse],
+    dependencies=[Depends(allowed_operations_for_all)],
+)
+async def read_cars(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=1000),
+    session: AsyncSession = Depends(get_session),
+) -> ScalarResult:
+    """
+    Handles a GET-operation to cars route and gets all cars.
+
+    :param offset: The number of cars to skip.
+    :type offset: int
+    :param limit: The maximum number of cars to return.
+    :type limit: int
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The ScalarResult with the list of cars.
+    :rtype: ScalarResult
+    """
+    cars = await repository_cars.read_cars(offset, limit, session)
+    return cars
+
+
 @router.put(
     "",
     response_model=CarResponse,
@@ -106,8 +139,12 @@ async def update_car(
     :rtype: Car
     """
     car = await repository_cars.read_car_by_car_id(car_id, session)
-    if car:
-        car = await repository_cars.update_car(car_id, body, session)
+    if not car:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Car not found",
+        )
+    car = await repository_cars.update_car(car_id, body, session)
     return car
 
 
@@ -134,8 +171,10 @@ async def block_or_unblock_car(
     :rtype: Car
     """
     car = await repository_cars.read_car_by_car_id(car_id, session)
-    if car:
-        car = await repository_cars.block_or_unblock_car(
-            car_id, body.is_to_block, session
+    if not car:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Car not found",
         )
+    car = await repository_cars.block_or_unblock_car(car_id, body.is_to_block, session)
     return car
