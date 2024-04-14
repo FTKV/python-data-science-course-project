@@ -1,25 +1,35 @@
-from fastapi import FastAPI, File, UploadFile
+import uvicorn
 import numpy as np
 import cv2
 import tensorflow as tf
+from PIL import Image
+from fastapi import FastAPI, File, UploadFile
 from tensorflow.keras import optimizers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.layers import Dense, Flatten, MaxPooling2D, Dropout, Conv2D
 from keras.models import model_from_json
 
+
+VIDEOCAMERA1_SHAPE = (224, 224)
+
 app = FastAPI()
 
+# load the model architecture from JSON + weights
+try:
+    with open("model.json", "r") as json_file:
+        loaded_model_json = json_file.read()
+    model = model_from_json(loaded_model_json)
+    model.load_weights("model.weights.h5")
+except Exception as e:
+    print('Exception with loading model or weights: {}'.format(e))
 
-@app.post("/process_image")
-async def upload_image(img_file: UploadFile = File(...)):
+# set video capture
+video = cv2.VideoCapture(0)
 
-    img_bytes = await img_file.read()
-    np_array = np.frombuffer(img_bytes, np.uint8)
 
-    plate_cascade = cv2.CascadeClassifier("license_plate.xml")
-
-    def detect_plate(img, text=""):
+# Aux Functions
+def detect_plate(img, plate_cascade, text=""):
         plate_img = img.copy()
         roi = img.copy()
         plate = None
@@ -61,12 +71,8 @@ async def upload_image(img_file: UploadFile = File(...)):
             return None, None
         else:
             return plate_img, plate
-
-    # img = cv2.imread(image_to_process)
-    img = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-    output_img, plate = detect_plate(img)
-
-    def find_contours(dimensions, img):
+        
+def find_contours(dimensions, img):
 
         # Find all contours in the image
         cntrs, _ = cv2.findContours(img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -138,8 +144,7 @@ async def upload_image(img_file: UploadFile = File(...)):
 
         return img_res
 
-    # Find characters in the resulting images
-    def segment_characters(image):
+def segment_characters(image):
         if image is None:
             return None
         # Preprocess cropped license plate image
@@ -170,33 +175,23 @@ async def upload_image(img_file: UploadFile = File(...)):
 
         return char_list
 
-    # segmented characters
-    char = segment_characters(plate)
-
-    # download the model architecture from JSON and weights
-    with open("model.json", "r") as json_file:
-        loaded_model_json = json_file.read()
-    model = model_from_json(loaded_model_json)
-    model.load_weights("model.weights.h5")
-
-    # Predicting the output
-    def fix_dimension(img):
+def fix_dimension(img):
         new_img = np.zeros((28, 28, 3))
         for i in range(3):
             new_img[:, :, i] = img
         return new_img
 
-    def show_results():
+def predict_plate(char_list, model):
         dic = {}
         characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         for i, c in enumerate(characters):
             dic[i] = c
 
-        if char is None:
+        if char_list is None:
             return None
 
         output = []
-        for i, ch in enumerate(char):  # iterating over the characters
+        for i, ch in enumerate(char_list):  # iterating over the characters
             img_ = cv2.resize(ch, (28, 28), interpolation=cv2.INTER_AREA)
             img = fix_dimension(img_)
             img = img.reshape(1, 28, 28, 3)  # preparing image for the model
@@ -209,13 +204,73 @@ async def upload_image(img_file: UploadFile = File(...)):
 
         return plate_number
 
-    license_plate_number = show_results()
+
+# Routers
+@app.post("/process_image")
+async def upload_image(img_file: UploadFile = File(...)):
+
+    img_bytes = await img_file.read()
+    np_array = np.frombuffer(img_bytes, np.uint8)
+
+    plate_cascade = cv2.CascadeClassifier("license_plate.xml")
+
+    img = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+    output_img, plate = detect_plate(img, plate_cascade)
+
+    # Find characters in the resulting images
+    # segmented characters
+    char_list = segment_characters(plate)
+
+    # Predicting the output
+    license_plate_number = predict_plate(char_list, model)
     print(f"License plate number: {license_plate_number}")
 
     return {"result": license_plate_number}
 
 
-if __name__ == "__main__":
-    import uvicorn
+@app.get("/run_camera_1")
+async def run_camera_1():
+    while True:
+        _, frame = video.read()
 
+        #Convert the captured frame into RGB
+        im = Image.fromarray(frame, 'RGB')
+
+        #Resizing into VIDEOCAMERA1_SHAPE because we trained the model with this image size.
+        im = im.resize(VIDEOCAMERA1_SHAPE) ## ПОЗЖЕ predict_plate уже делает ресайз и добавляет 1 в начале шейпа?
+        img_array = np.array(im)
+
+        #Our keras model used a 4D tensor, (images x height x width x channel)
+        #So changing dimension (VIDEOCAMERA1_SHAPE)x3 into 1x(VIDEOCAMERA1_SHAPE)x3 
+        # img_array = np.expand_dims(img_array, axis=0)
+
+        #Calling the predict method on model to predict 'me' on the image
+        prediction = predict_plate(img_array)
+
+        # #if prediction is 0, which means I am missing on the image, then show the frame in gray color.
+        # if prediction == 0:
+        #         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        if prediction != 0:
+            cv2.imshow("Capturing", frame) ## ПОЗЖЕ Добавить рамку на номер
+
+        # ... # ПОЗЖЕ сделать запрос к БД с данным номером 
+
+            # if prediction
+        # ... # ПОЗЖЕ если есть совпадение - открыть ворота, начать учёт времени?
+
+        key=cv2.waitKey(1)
+        if key == ord('q'):
+                stop_camera_1()
+                break
+        # return StreamingResponse(camera_1(), media_type="multipart/x-mixed-replace; boundary=frame") ## альтернативный способ?
+
+
+@app.get("/stop_camera_1")
+async def stop_camera_1():
+    video.release()
+    cv2.destroyAllWindows() ## ПОЗЖЕ скорее всего, нужно будет закрыть только 1 окно с этой камеры, но это не точно
+
+
+if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
