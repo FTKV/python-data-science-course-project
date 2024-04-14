@@ -2,6 +2,7 @@ from datetime import datetime, time, timedelta
 from typing import List
 
 from pydantic import BaseModel, Field, UUID4
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from .rates import RateModel
 
@@ -16,18 +17,6 @@ class RateDetailModel(BaseModel):
     class Config:
         orm_mode = True
 
-    def calculate_parking_cost(self, duration: timedelta) -> int:
-   
-        total_hours = duration.total_seconds() / 3600
-        total_days = total_hours / 24
-
-        if duration.total_seconds() < 300:
-            return 0  
-        else:
-            if total_days >= 1:
-                return int(total_days * self.daily_rate)
-            else:
-                return int(total_hours * self.hourly_rate)
 
     def update_tariff(self, hourly_rate: int, daily_rate: int):
         """Update tariff rates"""
@@ -43,3 +32,14 @@ class RateDetailModel(BaseModel):
         """Update hourly and daily rates"""
         self.hourly_rate = hourly_rate
         self.daily_rate = daily_rate
+
+    def get_applicable_rate(self, current_time: time) -> int:
+        """Get applicable rate based on the current time"""
+        if self.start_time <= current_time < self.end_time:
+            return self.hourly_rate
+        else:
+            return 0
+
+    def get_current_rate(self) -> int:
+        """Get the current rate for the parking"""
+        return self.hourly_rate  # Return the current hourly rate
