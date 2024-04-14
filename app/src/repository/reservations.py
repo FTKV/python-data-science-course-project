@@ -6,7 +6,7 @@ from typing import Union
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy import select, UUID
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.models import Reservation
 from src.schemas.reservations import ReservationModel, ReservationUpdateModel
@@ -30,7 +30,7 @@ async def create_reservation(reservation_data: ReservationModel, session: AsyncS
     return reservation
 
 
-async def get_reservation_by_id(reservation_id: UUID | int, session: AsyncSession):
+async def get_reservation_by_id(reservation_id: UUID4 | int, session: AsyncSession):
     """
     Retrieve a reservation by its ID from the database.
 
@@ -47,7 +47,7 @@ async def get_reservation_by_id(reservation_id: UUID | int, session: AsyncSessio
 
 
 async def get_reservations_by_user_id(
-    user_id: UUID | int, offset: int, limit: int, session: AsyncSession
+    user_id: UUID4 | int, offset: int, limit: int, session: AsyncSession
 ):
     """
     Retrieve all reservations associated with a specific user from the database.
@@ -82,7 +82,7 @@ async def get_all_reservations(offset: int, limit: int, session: AsyncSession):
 
 
 async def update_reservation(
-    reservation_id: UUID | int,
+    reservation_id: UUID4 | int,
     reservation_data: ReservationUpdateModel,
     session: AsyncSession,
 ) -> Reservation | None:
