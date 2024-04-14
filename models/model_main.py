@@ -24,9 +24,21 @@ async def upload_image(img_file: UploadFile = File(...)):
         roi = img.copy()
         plate = None
         plate_rect = plate_cascade.detectMultiScale(
-            plate_img, scaleFactor=1.2, minNeighbors=6
+            plate_img, scaleFactor=1.2, minNeighbors=7
         )  # detects numberplates and returns the coordinates and dimensions of detected license plate's contours.
-        for x, y, w, h in plate_rect:
+        max_area = 0
+        max_index = -1
+
+        for i, (x, y, w, h) in enumerate(plate_rect):
+            area = w * h
+            if area > max_area:
+                max_area = area
+                max_index = i
+
+        if max_index != -1:
+            x, y, w, h = plate_rect[max_index]
+
+            #        for x, y, w, h in plate_rect:
             roi_ = roi[
                 y : y + h, x : x + w, :
             ]  # extracting the Region of Interest of license plate for blurring.

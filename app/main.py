@@ -20,7 +20,7 @@ import uvicorn
 
 from src.conf.config import settings
 from src.database.connect_db import engine, get_session, redis_db0, pool_redis_db
-from src.routes import auth, users
+from src.routes import auth, users, cars, financial_transactions
 
 
 @asynccontextmanager
@@ -113,6 +113,30 @@ app.include_router(
 )
 app.include_router(
     users.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    cars.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    financial_transactions.router,
     prefix=BASE_API_ROUTE,
     dependencies=[
         Depends(

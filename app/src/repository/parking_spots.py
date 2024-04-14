@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from src.database.models import User, ParkingSpot
-from src.schemas.parking_spot import ParkingSpotModel, ParkingSpotDB, ParkingSpotUpdate
+from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSpotUpdate
 
 
 async def create_parking_spot(

@@ -13,7 +13,7 @@ from src.utils.as_form import as_form
 
 
 @as_form
-class CarModel(BaseModel):
+class CarUnrecognizedPlateModel(BaseModel):
     plate: Annotated[UploadFile, File()]
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
@@ -29,6 +29,14 @@ class CarModel(BaseModel):
         if isinstance(value, str):
             return cls(**json.loads(value))
         return value
+
+
+class CarRecognizedPlateModel(BaseModel):
+    plate: Annotated[str | None, Field(max_length=32)]
+    model: Annotated[str | None, Field(max_length=128)] = None
+    color: Annotated[str | None, Field(max_length=32)] = None
+    description: Annotated[str | None, Field(max_length=1024)] = None
+    user_id: UUID4 | int | None = None
 
 
 class CarUpdateModel(BaseModel):
