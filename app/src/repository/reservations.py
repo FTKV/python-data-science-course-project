@@ -1,13 +1,11 @@
 """
-Module of reservation' CRUD
+Module for performing CRUD operations on reservations.
 """
 
 from typing import Union
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from sqlalchemy import select, UUID
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from src.database.models import Reservation
 from src.schemas.reservations import ReservationModel, ReservationUpdateModel
 
@@ -17,8 +15,8 @@ async def create_reservation(reservation_data: ReservationModel, session: AsyncS
     Create a new reservation in the database.
 
     Args:
-        session (AsyncSession): An asynchronous database session.
         reservation_data (ReservationModel): The data of the reservation to create.
+        session (AsyncSession): An asynchronous database session.
 
     Returns:
         Reservation: The created reservation object.
@@ -30,13 +28,13 @@ async def create_reservation(reservation_data: ReservationModel, session: AsyncS
     return reservation
 
 
-async def get_reservation_by_id(reservation_id: UUID | int, session: AsyncSession):
+async def get_reservation_by_id(reservation_id: UUID4 | int, session: AsyncSession):
     """
     Retrieve a reservation by its ID from the database.
 
     Args:
+        reservation_id (Union[UUID4, int]): The ID of the reservation to retrieve.
         session (AsyncSession): An asynchronous database session.
-        reservation_id (int): The ID of the reservation to retrieve.
 
     Returns:
         Reservation: The retrieved reservation object, if found, otherwise None.
@@ -47,14 +45,16 @@ async def get_reservation_by_id(reservation_id: UUID | int, session: AsyncSessio
 
 
 async def get_reservations_by_user_id(
-    user_id: UUID | int, offset: int, limit: int, session: AsyncSession
+    user_id: UUID4 | int, offset: int, limit: int, session: AsyncSession
 ):
     """
     Retrieve all reservations associated with a specific user from the database.
 
     Args:
-        session (AsyncSession): An asynchronous database session.
         user_id (Union[UUID4, int]): The ID of the user.
+        offset (int): The offset for pagination.
+        limit (int): The limit for pagination.
+        session (AsyncSession): An asynchronous database session.
 
     Returns:
         List[Reservation]: A list of reservations associated with the user.
@@ -70,6 +70,8 @@ async def get_all_reservations(offset: int, limit: int, session: AsyncSession):
     Retrieve all reservations from the database.
 
     Args:
+        offset (int): The offset for pagination.
+        limit (int): The limit for pagination.
         session (AsyncSession): An asynchronous database session.
 
     Returns:
@@ -82,7 +84,7 @@ async def get_all_reservations(offset: int, limit: int, session: AsyncSession):
 
 
 async def update_reservation(
-    reservation_id: UUID | int,
+    reservation_id: UUID4 | int,
     reservation_data: ReservationUpdateModel,
     session: AsyncSession,
 ) -> Reservation | None:
@@ -90,9 +92,9 @@ async def update_reservation(
     Update a reservation in the database.
 
     Args:
-        session (AsyncSession): An asynchronous database session.
-        reservation_id (int): The ID of the reservation to update.
+        reservation_id (Union[UUID4, int]): The ID of the reservation to update.
         reservation_data (ReservationUpdateModel): The updated reservation information.
+        session (AsyncSession): An asynchronous database session.
 
     Returns:
         Union[Reservation, None]: The updated reservation object, if found, otherwise None.
