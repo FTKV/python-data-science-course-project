@@ -5,8 +5,8 @@ Module for performing CRUD operations on reservations.
 from typing import Union
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from src.database.models import Reservation
+from sqlalchemy import select, func
+from src.database.models import Reservation, FinancialTransaction
 from src.schemas.reservations import ReservationModel, ReservationUpdateModel
 
 
@@ -21,7 +21,7 @@ async def create_reservation(reservation_data: ReservationModel, session: AsyncS
     Returns:
         Reservation: The created reservation object.
     """
-    reservation = Reservation(**reservation_data.model_dump())
+    reservation = Reservation(**reservation_data.model_dump(), debit=0.00, credit=0.00)
     session.add(reservation)
     await session.commit()
     await session.refresh(reservation)
@@ -102,9 +102,22 @@ async def update_reservation(
     reservation = await get_reservation_by_id(reservation_id, session)
     if reservation:
         for key, value in reservation_data.model_dump().items():
-            if hasattr(reservation, key):
+            if hasattr(reservation, key) and value is not None:
                 setattr(reservation, key, value)
         await session.commit()
         await session.refresh(reservation)
         return reservation
     return None
+
+
+async def get_debit_credit_of_reservation(reservation_id, session):
+    stmt = (
+        select(
+            func.sum(FinancialTransaction.debit), func.sum(FinancialTransaction.credit)
+        )
+        .select_from(FinancialTransaction)
+        .filter(FinancialTransaction.reservation_id == reservation_id)
+        .group_by(FinancialTransaction.reservation_id)
+    )
+    result = await session.execute(stmt)
+    return result.all()

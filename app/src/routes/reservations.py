@@ -14,12 +14,13 @@ router = APIRouter(prefix="/reservations", tags=["reservations"])
 allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
-@router.post("/create", response_model=ReservationModel,
+
+@router.post("", response_model=ReservationModel,
             status_code=status.HTTP_201_CREATED,
             dependencies=[Depends(allowed_operations_for_all)])
 async def create_reservation(
-    reservation_data: ReservationModel,
-    session: AsyncSession = Depends(get_session)
+    reservation_data: ReservationModel = Depends(ReservationModel.as_form),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Create a new reservation.
@@ -92,9 +93,8 @@ async def get_user_reservations(
             dependencies=[Depends(allowed_operations_for_all)])
 async def update_reservation(
     reservation_id: int,
-    reservation_data: ReservationUpdateModel,
+    reservation_data: ReservationUpdateModel = Depends(ReservationUpdateModel.as_form),
     session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(auth_service.get_current_user),
 ):
     """
     Update a reservation.
