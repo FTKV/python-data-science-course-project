@@ -12,7 +12,10 @@ router = APIRouter(prefix="/rates", tags=["rates"])
 
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
-@router.post("", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)])
+
+@router.post(
+    "", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)]
+)
 async def create_rate(rate: RateUpdate, session: AsyncSession = Depends(get_session)):
     """
     Handles a POST-operation to create a rate.
@@ -27,9 +30,16 @@ async def create_rate(rate: RateUpdate, session: AsyncSession = Depends(get_sess
     rate = await repository_rates.create_rate(rate, session)
     return rate
 
-@router.get("", response_model=List[RateResponse], dependencies=[Depends(allowed_operations_for_all)])
-async def read_rates(offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)):
-   """
+
+@router.get(
+    "",
+    response_model=List[RateResponse],
+    dependencies=[Depends(allowed_operations_for_all)],
+)
+async def read_rates(
+    offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
+):
+    """
     Handles a GET-operation to get all rates.
 
     :param offset: The number of rates to skip.
@@ -44,8 +54,15 @@ async def read_rates(offset: int = 0, limit: int = 10, session: AsyncSession = D
     rates = await repository_rates.read_rates(offset, limit, session)
     return rates
 
-@router.put("/{rate_id}", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)])
-async def update_rate(rate_id: int, rate_update: RateUpdate, session: AsyncSession = Depends(get_session)):
+
+@router.put(
+    "/{rate_id}",
+    response_model=RateResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
+async def update_rate(
+    rate_id: int, rate_update: RateUpdate, session: AsyncSession = Depends(get_session)
+):
     """
     Handles a PUT-operation to update a rate.
 
@@ -60,12 +77,19 @@ async def update_rate(rate_id: int, rate_update: RateUpdate, session: AsyncSessi
     """
     rate = await repository_rates.update_rate(rate_id, rate_update, session)
     if not rate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found"
+        )
     return rate
 
-@router.delete("/{rate_id}", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)])
+
+@router.delete(
+    "/{rate_id}",
+    response_model=RateResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def delete_rate(rate_id: int, session: AsyncSession = Depends(get_session)):
-     """
+    """
     Handles a DELETE-operation to delete a rate.
 
     :param rate_id: The ID of the rate to delete.
@@ -77,5 +101,7 @@ async def delete_rate(rate_id: int, session: AsyncSession = Depends(get_session)
     """
     rate = await repository_rates.delete_rate(rate_id, session)
     if not rate:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found"
+        )
     return rate
