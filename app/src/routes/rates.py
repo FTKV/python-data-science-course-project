@@ -17,7 +17,10 @@ router = APIRouter(prefix="/rates", tags=["rates"])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post(response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)],
+@router.post(
+    "",
+    response_model=RateResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_rate(
     rate_input: RateInput, session: AsyncSession = Depends(get_session)
@@ -36,7 +39,7 @@ async def create_rate(
     return rate
 
 
-@router.get(response_model=List[RateResponse], dependencies=[Depends(allowed_operations_for_all)])
+@router.get("", response_model=List[RateResponse], dependencies=[Depends(allowed_operations_for_all)])
 async def read_rates(
     offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
 ):
