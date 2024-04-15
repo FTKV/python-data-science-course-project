@@ -111,6 +111,17 @@ async def update_reservation(
 
 
 async def get_debit_credit_of_reservation(reservation_id, session):
+    """
+    Retrieve the total debit and credit amounts associated with a reservation.
+
+    Args:
+        reservation_id: The ID of the reservation to retrieve totals for.
+        session: An asynchronous database session.
+
+    Returns:
+        Tuple[float, float]: A tuple containing the total debit and credit amounts.
+            If no transactions are found for the reservation, (0.0, 0.0) is returned.
+    """
     stmt = (
         select(
             func.sum(FinancialTransaction.debit), func.sum(FinancialTransaction.credit)
@@ -120,4 +131,5 @@ async def get_debit_credit_of_reservation(reservation_id, session):
         .group_by(FinancialTransaction.reservation_id)
     )
     result = await session.execute(stmt)
-    return result.all()
+    totals = result.scalar_one_or_none()
+    return totals if totals else (0.0, 0.0)
