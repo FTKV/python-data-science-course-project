@@ -45,10 +45,9 @@ async def create_financial_transaction(
             body, session
         )
     )
-    result = await repository_reservations.get_debit_credit_of_reservation(
+    debit, credit = await repository_reservations.get_debit_credit_of_reservation(
         financial_transaction.reservation_id, session
     )
-    debit, credit = result[0]
     body = ReservationUpdateModel(debit=debit, credit=credit)
     await repository_reservations.update_reservation(
         financial_transaction.reservation_id, body, session

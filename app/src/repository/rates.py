@@ -1,11 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.models import Rate
+from src.database.models import User, Rate
 from src.schemas.rates import RateCreate, RateUpdate, RateResponse
 from typing import List
 
 
-async def create_rate(body: RateCreate, session: AsyncSession) -> Rate:
+async def create_rate(body: RateCreate, user: User, session: AsyncSession) -> Rate:
     """
     Creates a new rate.
     :param body: The body for the rate to create.
@@ -15,7 +15,7 @@ async def create_rate(body: RateCreate, session: AsyncSession) -> Rate:
     :return: The newly created rate.
     :rtype: Rate
     """
-    rate = Rate(**body.model_dump())
+    rate = Rate(**body.model_dump(), user_id=user.id)
     session.add(rate)
     await session.commit()
     await session.refresh(rate)

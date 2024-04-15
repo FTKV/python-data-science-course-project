@@ -29,7 +29,6 @@ from src.routes import (
     reservations,
     events,
     rates,
-    rate_details
 )
 from src.services.scheduler import scheduler
 
@@ -185,6 +184,18 @@ app.include_router(
 )
 app.include_router(
     events.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    rates.router,
     prefix=BASE_API_ROUTE,
     dependencies=[
         Depends(
