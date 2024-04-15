@@ -98,6 +98,32 @@ async def update_parking_spot_available_status(
     return None
 
 
+async def update_parking_spot_service_status(
+    session: AsyncSession, parking_spot_id: int, out_of_service: bool
+) -> ParkingSpot:
+    """
+    Update the service status of a parking spot.
+
+    This function updates the service status (in-service or out-of-service) of a parking spot
+    in the database. It takes the parking spot ID and the new service status as input.
+
+    Args:
+        session (AsyncSession): An asynchronous database session.
+        parking_spot_id (int): The ID of the parking spot to update.
+        out_of_service (bool): The new service status of the parking spot.
+
+    Returns:
+        ParkingSpot: The updated parking spot object, if found, otherwise None.
+    """
+    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    if parking_spot:
+        parking_spot.is_out_of_service = out_of_service
+        await session.commit()
+        await session.refresh(parking_spot)
+        return parking_spot
+    return None
+
+
 async def delete_parking_spot(session: AsyncSession, parking_spot_id: int) -> bool:
     """
     Delete a parking spot from the database.

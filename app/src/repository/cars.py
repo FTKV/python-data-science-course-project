@@ -141,12 +141,16 @@ async def update_car(
     return car
 
 
-async def blacklist_car(car_id: UUID | int, session: AsyncSession) -> Car | None:
+async def block_or_unblock_car(
+    car_id: UUID | int, is_to_block: bool, session: AsyncSession
+) -> Car | None:
     """
-    Blacklists a car with the specified id.
+    Blocks or unblocks a car with the specified id.
 
-    :param car_id: The ID of the car to blacklist.
+    :param car_id: The ID of the car to blocks or unblock.
     :type car_id: UUID | int
+    :param is_to_block: The value to block or unblock the car.
+    :type is_to_block: bool
     :param session: The database session.
     :type session: AsyncSession
     :return: The car with the specified ID, or None if it does not exist.
@@ -156,6 +160,6 @@ async def blacklist_car(car_id: UUID | int, session: AsyncSession) -> Car | None
     car = await session.execute(stmt)
     car = car.scalar()
     if car:
-        car.is_blacklisted = True
+        car.is_blacklisted = is_to_block
         await session.commit()
     return car
