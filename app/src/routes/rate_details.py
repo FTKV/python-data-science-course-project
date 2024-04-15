@@ -19,13 +19,10 @@ router = APIRouter(prefix="/rate-details", tags=["rate-details"])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post(
-    "",
-    response_model=RateDetailResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
+@router.post("", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_rate_detail(
-    rate_detail_input: RateDetailInput, session: AsyncSession = Depends(get_db_session)
+    rate_detail_input: RateDetailInput, session: AsyncSession = Depends(get_session)
 ):
     """
     Handles a POST-operation to create a rate detail.
@@ -43,9 +40,9 @@ async def create_rate_detail(
     return rate_detail
 
 
-@router.get("/", response_model=List[RateDetailResponse])
+@router.get("", response_model=List[RateDetailResponse], dependencies=[Depends(allowed_operations_for_all)])
 async def read_rate_details(
-    offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_db_session)
+    offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
 ):
     """
     Handles a GET-operation to get all rate details.
@@ -65,11 +62,11 @@ async def read_rate_details(
     return rate_details
 
 
-@router.put("/{rate_detail_id}", response_model=RateDetailResponse)
+@router.put("/{rate_detail_id}", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)])
 async def update_rate_detail(
     rate_detail_id: int,
     rate_detail_update: RateDetailUpdate,
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Handles a PUT-operation to update a rate detail.
@@ -93,9 +90,9 @@ async def update_rate_detail(
     return rate_detail
 
 
-@router.delete("/{rate_detail_id}", response_model=RateDetailResponse)
+@router.delete("/{rate_detail_id}", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)])
 async def delete_rate_detail(
-    rate_detail_id: int, session: AsyncSession = Depends(get_db_session)
+    rate_detail_id: int, session: AsyncSession = Depends(get_session)
 ):
     """
     Handles a DELETE-operation to delete a rate detail.
