@@ -28,6 +28,8 @@ from src.routes import (
     parking_spots,
     reservations,
     events,
+    rates,
+    rate_details
 )
 from src.services.scheduler import scheduler
 
