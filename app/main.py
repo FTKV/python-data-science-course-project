@@ -29,6 +29,7 @@ from src.routes import (
     reservations,
     events,
 )
+from src.services.scheduler import scheduler
 
 
 @asynccontextmanager
@@ -61,6 +62,7 @@ async def startup():
     await pool_redis_db.disconnect()
     await redis_db0.flushall()
     await FastAPILimiter.init(redis_db0)
+    scheduler.start()
     return True
 
 
@@ -286,6 +288,7 @@ async def read_root():
     :return: The message.
     :rtype: str
     """
+
     return {"message": settings.api_name}
 
 
