@@ -20,7 +20,16 @@ import uvicorn
 
 from src.conf.config import settings
 from src.database.connect_db import engine, get_session, redis_db0, pool_redis_db
-from src.routes import auth, users, cars, financial_transactions
+from src.routes import (
+    auth,
+    users,
+    cars,
+    financial_transactions,
+    parking_spots,
+    reservations,
+    events,
+)
+from src.services.scheduler import scheduler
 
 
 @asynccontextmanager
@@ -53,6 +62,7 @@ async def startup():
     await pool_redis_db.disconnect()
     await redis_db0.flushall()
     await FastAPILimiter.init(redis_db0)
+    scheduler.start()
     return True
 
 
@@ -137,6 +147,42 @@ app.include_router(
 )
 app.include_router(
     financial_transactions.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    parking_spots.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    reservations.router,
+    prefix=BASE_API_ROUTE,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=settings.rate_limiter_times,
+                seconds=settings.rate_limiter_seconds,
+            )
+        )
+    ],
+)
+app.include_router(
+    events.router,
     prefix=BASE_API_ROUTE,
     dependencies=[
         Depends(
@@ -242,8 +288,9 @@ async def read_root():
     :return: The message.
     :rtype: str
     """
+
     return {"message": settings.api_name}
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=settings.api_host, port=settings.api_port)
+    uvicorn.run("main:app", host=settings.api_host, port=settings.api_port, reload=True)

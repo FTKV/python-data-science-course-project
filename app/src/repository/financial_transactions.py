@@ -77,19 +77,19 @@ async def read_financial_transactions_by_user_id(
 
 
 async def read_financial_transaction(
-    car_id: UUID | int,
+    fin_trans_id: UUID | int,
     session: AsyncSession,
 ) -> FinancialTransaction | None:
     """
     Gets a financial transaction with the specified id.
 
-    :param car_id: The ID of the financial transaction to get.
-    :type car_id: UUID | int
+    :param fin_trans_id: The ID of the financial transaction to get.
+    :type fin_trans_id: UUID | int
     :param session: The database session.
     :type session: AsyncSession
     :return: The financial transaction with the specified ID, or None if it does not exist.
     :rtype: FinancialTransaction | None
     """
-    stmt = select(FinancialTransaction).filter(FinancialTransaction.id == car_id)
+    stmt = select(FinancialTransaction).filter(FinancialTransaction.id == fin_trans_id)
     financial_transaction = await session.execute(stmt)
     return financial_transaction.scalar()
