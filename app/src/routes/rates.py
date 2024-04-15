@@ -1,51 +1,45 @@
-from typing import List
-
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.connect_db import get_session
-from src.repository import rates as repository_rates
-from src.schemas.rates import RateCreate, RateUpdate, RateResponse
-from src.services.roles import RoleAccess
 from src.database.models import Role
+from src.repository import rates as repository_rates
+from src.schemas.rates import (
+    RateInput,
+    RateUpdate,
+    RateResponse,
+)
+from src.services.roles import RoleAccess
+
 
 router = APIRouter(prefix="/rates", tags=["rates"])
 
 allowed_operations_for_all = RoleAccess([Role.administrator])
-allowed_operations_for_self = RoleAccess([Role.user])
 
-@router.post(
-    "",
-    response_model=RateResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
+
+@router.post(response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_rate(
-    body: RateCreate,
-    session: AsyncSession = Depends(get_session),
-) -> RateResponse:
+    rate_input: RateInput, session: AsyncSession = Depends(get_session)
+):
     """
     Handles a POST-operation to create a rate.
 
-    :param body: The data for the rate to create.
-    :type body: RateCreate
+    :param rate_input: The data for the rate to create.
+    :type rate_input: RateInput
     :param session: The database session.
     :type session: AsyncSession
     :return: The newly created rate.
     :rtype: RateResponse
     """
-    rate = await repository_rates.create_rate(body, session)
+    rate = await repository_rates.create_rate(rate_input, session)
     return rate
 
-@router.get(
-    "",
-    response_model=List[RateResponse],
-    dependencies=[Depends(allowed_operations_for_all)],
-)
+
+@router.get(response_model=List[RateResponse], dependencies=[Depends(allowed_operations_for_all)])
 async def read_rates(
-    offset: int = 0,
-    limit: int = 10,
-    session: AsyncSession = Depends(get_session),
-) -> List[RateResponse]:
+    offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
+):
     """
     Handles a GET-operation to get all rates.
 
@@ -61,45 +55,37 @@ async def read_rates(
     rates = await repository_rates.read_rates(offset, limit, session)
     return rates
 
-@router.put(
-    "/{rate_id}",
-    response_model=RateResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
-)
+
+@router.put("/{rate_id}", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)])
 async def update_rate(
     rate_id: int,
-    body: RateUpdate,
+    rate_update: RateUpdate,
     session: AsyncSession = Depends(get_session),
-) -> RateResponse:
+):
     """
     Handles a PUT-operation to update a rate.
 
     :param rate_id: The ID of the rate to update.
     :type rate_id: int
-    :param body: The updated data for the rate.
-    :type body: RateUpdate
+    :param rate_update: The updated data for the rate.
+    :type rate_update: RateUpdate
     :param session: The database session.
     :type session: AsyncSession
     :return: The updated rate.
     :rtype: RateResponse
     """
-    rate = await repository_rates.update_rate(rate_id, body, session)
+    rate = await repository_rates.update_rate(rate_id, rate_update, session)
     if not rate:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Rate not found",
+            status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found"
         )
     return rate
 
-@router.delete(
-    "/{rate_id}",
-    response_model=RateResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
-)
+
+@router.delete("/{rate_id}", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)])
 async def delete_rate(
-    rate_id: int,
-    session: AsyncSession = Depends(get_session),
-) -> RateResponse:
+    rate_id: int, session: AsyncSession = Depends(get_session)
+):
     """
     Handles a DELETE-operation to delete a rate.
 
@@ -113,7 +99,6 @@ async def delete_rate(
     rate = await repository_rates.delete_rate(rate_id, session)
     if not rate:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Rate not found",
+            status_code=status.HTTP_404_NOT_FOUND, detail="Rate not found"
         )
     return rate
