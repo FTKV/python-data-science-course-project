@@ -1,11 +1,11 @@
 FROM tensorflow/tensorflow:latest
 # Install dependencies for opencv
-RUN apt update && apt install -y libgl1
+RUN apt update && apt install -y libgl1 tesseract-ocr
 # Install dependencies for the model
-RUN pip install opencv-python pillow fastapi uvicorn python-multipart
+RUN pip install opencv-python pytesseract fastapi uvicorn python-multipart
 # copy to container
 COPY . /app
 WORKDIR /app
 EXPOSE 8001
 # Exec
-CMD ["python", "model_main.py"]
+CMD ["python", "main_model.py"]
