@@ -15,8 +15,7 @@ from src.database.models import Event, Role
 from src.repository import events as repository_events
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
-from src.schemas.events import EventModel, EventDB
-
+from src.schemas.events import EventModel, EventDB  
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -26,11 +25,12 @@ allowed_operations_for_all = RoleAccess([Role.administrator])
 
 @router.post(
     "/make",
+    response_model=EventDB,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_event(
-    body: EventModel,
+    body: EventModel = Depends(EventModel.as_form),
     # current_user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
     cache: Redis = Depends(get_redis_db1),
@@ -63,7 +63,7 @@ async def read_event(
     cache: Redis = Depends(get_redis_db1),
 ):
     """
-    Handles a GET-operation to '/{id}' event subroute and gets the user's profile with specified username.
+    Handles a GET-operation to '/{id}' event subroute and gets the event with specified id.
 
     :param id: The id of the event to read.
     :type id: int

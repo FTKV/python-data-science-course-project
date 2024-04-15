@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field, ConfigDict, UUID4
 
 from src.database.models import Status
 
+from src.utils.as_form import as_form
+
+@as_form
 class EventModel(BaseModel):
     event_type: Status
     parking_spot_id: UUID4 | int
