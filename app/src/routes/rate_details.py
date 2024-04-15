@@ -19,10 +19,7 @@ router = APIRouter(prefix="/rate-details", tags=["rate-details"])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post(
-    "",
-    response_model=RateDetailResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
+@router.post("", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_rate_detail(
     rate_detail_input: RateDetailInput, session: AsyncSession = Depends(get_session)
