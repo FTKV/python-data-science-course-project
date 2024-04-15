@@ -2,7 +2,6 @@
 Module of authentication routes
 """
 
-
 from pydantic import EmailStr, SecretStr
 
 from fastapi import (
@@ -66,8 +65,11 @@ async def signup(
     :return: The dict with the newly created user and the message.
     :rtype: dict
     """
-    user = await repository_users.get_user_by_email(data.email, session)
-    if user:
+    user_by_email = await repository_users.get_user_by_email(data.email, session)
+    user_by_username = await repository_users.get_user_by_username(
+        data.username, session
+    )
+    if user_by_email or user_by_username:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="The account already exists"
         )
