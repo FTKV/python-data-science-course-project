@@ -1,8 +1,8 @@
 """'Init'
 
-Revision ID: d2aaaa2f5b7b
+Revision ID: d58d2a72c53c
 Revises: 
-Create Date: 2024-04-14 21:28:42.976528
+Create Date: 2024-04-16 03:21:18.786965
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd2aaaa2f5b7b'
+revision: str = 'd58d2a72c53c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -102,13 +102,15 @@ def upgrade() -> None:
     sa.Column('end_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('debit', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('credit', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=True),
+    sa.Column('parking_spot_id', sa.UUID(), nullable=True),
     sa.Column('car_id', sa.UUID(), nullable=False),
     sa.Column('rate_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['car_id'], ['cars.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['parking_spot_id'], ['parking_spots.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['rate_id'], ['rates.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
@@ -117,7 +119,7 @@ def upgrade() -> None:
     sa.Column('event_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('event_type', postgresql.ENUM('CHECKED_IN', 'CHECKED_OUT', name='status', create_type=False), nullable=False),
     sa.Column('parking_spot_id', sa.UUID(), nullable=False),
-    sa.Column('reservation_id', sa.UUID(), nullable=False),
+    sa.Column('reservation_id', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.ForeignKeyConstraint(['parking_spot_id'], ['parking_spots.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['reservation_id'], ['reservations.id'], ondelete='SET NULL'),
@@ -128,7 +130,7 @@ def upgrade() -> None:
     sa.Column('trx_type', postgresql.ENUM('PAYMENT', 'CHARGE', name='trxtype', create_type=False), nullable=False),
     sa.Column('debit', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('credit', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=True),
     sa.Column('reservation_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.ForeignKeyConstraint(['reservation_id'], ['reservations.id'], ondelete='SET NULL'),

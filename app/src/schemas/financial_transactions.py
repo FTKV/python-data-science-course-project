@@ -23,7 +23,7 @@ class FinancialTransactionModel(BaseModel):
     trx_type: TrxType
     debit: float
     credit: float
-    user_id: UUID4 | int
+    user_id: UUID4 | int | None = None
     reservation_id: UUID4 | int
 
     @model_validator(mode="before")

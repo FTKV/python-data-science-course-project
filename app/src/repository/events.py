@@ -7,11 +7,13 @@ from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf.config import settings
-from src.database.models import User, Event
+from src.database.models import User, Event, Status
 from src.schemas.events import EventModel
 
 
-async def create_event(body: EventModel, session: AsyncSession) -> Event:
+async def create_event(
+    event_type: Status, body: EventModel, session: AsyncSession
+) -> Event:
     """
     Creates a new event.
 
@@ -22,7 +24,7 @@ async def create_event(body: EventModel, session: AsyncSession) -> Event:
     :return: The newly created event.
     :rtype: Event
     """
-    event = Event(**body.model_dump())
+    event = Event(**body.model_dump(), event_type=event_type)
     session.add(event)
     await session.commit()
     await session.refresh(event)
