@@ -20,6 +20,7 @@ class ReservationModel(BaseModel):
     start_date: datetime | None = None
     end_date: datetime | None = None
     user_id: UUID4 | int | None = None
+    parking_spot_id: UUID4 | int | None = None
     car_id: UUID4 | int
     rate_id: UUID4 | int
 
@@ -32,4 +33,5 @@ class ReservationUpdateModel(BaseModel):
     debit: float | None = None
     credit: float | None = None
     user_id: UUID4 | int | None = None
+    parking_spot_id: UUID4 | int | None = None
     rate_id: UUID4 | int | None = None

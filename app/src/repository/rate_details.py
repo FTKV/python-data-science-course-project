@@ -1,8 +1,8 @@
 from sqlalchemy import select, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.models import RateDetail
+from src.database.models import User, RateDetail
 from src.schemas.rate_details import (
-    RateDetailInput,
+    RateDetailModel,
     RateDetailUpdate,
     RateDetailResponse,
 )
@@ -10,7 +10,7 @@ from typing import List
 
 
 async def create_rate_detail(
-    body: RateDetailInput, session: AsyncSession
+    rate_id: UUID | int, body: RateDetailModel, user: User, session: AsyncSession
 ) -> RateDetail:
     """
     Creates a new rate detail.
@@ -21,7 +21,7 @@ async def create_rate_detail(
     :return: The newly created rate detail.
     :rtype: RateDetail
     """
-    rate_detail = RateDetail(**body.model_dump())
+    rate_detail = RateDetail(**body.model_dump(), rate_id=rate_id, user_id=user.id)
     session.add(rate_detail)
     await session.commit()
     await session.refresh(rate_detail)
