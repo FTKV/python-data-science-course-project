@@ -15,9 +15,12 @@ allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post("", response_model=ReservationModel,
-            status_code=status.HTTP_201_CREATED,
-            dependencies=[Depends(allowed_operations_for_self)])
+@router.post(
+    "",
+    response_model=ReservationModel,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def create_reservation(
     reservation_data: ReservationModel = Depends(ReservationModel.as_form),
     session: AsyncSession = Depends(get_session),
@@ -35,8 +38,11 @@ async def create_reservation(
     return await reservations.create_reservation(reservation_data, session)
 
 
-@router.get("/{reservation_id}", response_model=ReservationModel,
-            dependencies=[Depends(allowed_operations_for_self)])
+@router.get(
+    "/{reservation_id}",
+    response_model=ReservationModel,
+    dependencies=[Depends(allowed_operations_for_self)],
+)
 async def get_reservation(
     reservation_id: UUID4 | int,
     session: AsyncSession = Depends(get_session),
@@ -56,13 +62,19 @@ async def get_reservation(
     reservation = await reservations.get_reservation_by_id(reservation_id, session)
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
-    if not allowed_operations_for_self.has_access(current_user) and reservation.user_id != current_user.id:
+    if (
+        not allowed_operations_for_self.has_access(current_user)
+        and reservation.user_id != current_user.id
+    ):
         raise HTTPException(status_code=403, detail="Permission denied")
     return reservation
 
 
-@router.get("", response_model=List[ReservationModel],
-            dependencies=[Depends(allowed_operations_for_self)])
+@router.get(
+    "",
+    response_model=List[ReservationModel],
+    dependencies=[Depends(allowed_operations_for_self)],
+)
 async def get_user_reservations(
     offset: int = 0,
     limit: int = 10,
@@ -89,8 +101,11 @@ async def get_user_reservations(
         raise HTTPException(status_code=403, detail="Permission denied")
 
 
-@router.put("/{reservation_id}", response_model=ReservationModel,
-            dependencies=[Depends(allowed_operations_for_all)])
+@router.put(
+    "/{reservation_id}",
+    response_model=ReservationModel,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def update_reservation(
     reservation_id: int,
     reservation_data: ReservationUpdateModel = Depends(ReservationUpdateModel.as_form),
@@ -108,7 +123,9 @@ async def update_reservation(
     Returns:
         ReservationModel: The updated reservation.
     """
-    reservation = await reservations.update_reservation(reservation_id, reservation_data, session)
+    reservation = await reservations.update_reservation(
+        reservation_id, reservation_data, session
+    )
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
     return reservation

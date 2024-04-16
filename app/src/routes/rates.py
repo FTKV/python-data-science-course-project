@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,7 +49,9 @@ async def create_rate(
     dependencies=[Depends(allowed_operations_for_all)],
 )
 async def read_rates(
-    offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=1000),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Handles a GET-operation to get all rates.
@@ -155,8 +157,8 @@ async def add_rate_detail_to_rate(
 )
 async def read_rate_details_for_rate(
     rate_id: UUID4 | int,
-    offset: int = 0,
-    limit: int = 10,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=1000),
     session: AsyncSession = Depends(get_session),
 ):
     """
