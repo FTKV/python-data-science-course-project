@@ -38,11 +38,11 @@ async def get_parking_spot_by_id(
     Retrieve a parking spot by its ID.
 
     Args:
+        parking_spot_id (UUID | int): The ID of the parking spot to retrieve.
         session (AsyncSession): An asynchronous database session.
-        parking_spot_id (int): The ID of the parking spot to retrieve.
 
     Returns:
-        Union[ParkingSpot, None]: The parking spot, if found, otherwise None.
+        ParkingSpot | None: The parking spot, if found, otherwise None.
     """
     stmt = select(ParkingSpot).filter(ParkingSpot.id == parking_spot_id)
     parking_spot = await session.execute(stmt)
@@ -77,17 +77,17 @@ async def update_parking_spot(
 
 async def update_parking_spot_available_status(
     parking_spot_id: UUID | int, available: bool, session: AsyncSession
-) -> ParkingSpot:
+) -> ParkingSpot | None:
     """
     Update the availability status of a parking spot in the database.
 
     Args:
-        session (AsyncSession): An asynchronous database session.
-        parking_spot_id (int): The ID of the parking spot to update.
+        parking_spot_id (UUID | int): The ID of the parking spot to update.
         available (bool): The new availability status of the parking spot.
+        session (AsyncSession): An asynchronous database session.
 
     Returns:
-        Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
+        ParkingSpot | None: The updated parking spot object, if found, otherwise None.
     """
     parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
