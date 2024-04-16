@@ -21,14 +21,11 @@ async def create_reservation(reservation_data: ReservationModel, session: AsyncS
     Returns:
         Reservation: The created reservation object.
     """
-    if reservation_data.user_id is None:
-        return ValueError("User ID cannot be None")
     reservation = Reservation(**reservation_data.model_dump(), debit=0.00, credit=0.00)
     session.add(reservation)
     await session.commit()
     await session.refresh(reservation)
     return reservation
-
 
 
 async def get_reservation_by_id(reservation_id: UUID4 | int, session: AsyncSession):
@@ -42,8 +39,8 @@ async def get_reservation_by_id(reservation_id: UUID4 | int, session: AsyncSessi
     Returns:
         Reservation: The retrieved reservation object, if found, otherwise None.
     """
-    query = select(Reservation).filter(Reservation.id == reservation_id)
-    result = await session.execute(query)
+    stmt = select(Reservation).filter(Reservation.id == reservation_id)
+    result = await session.execute(stmt)
     return result.scalar()
 
 
