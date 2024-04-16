@@ -14,7 +14,7 @@ from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSp
 
 async def create_parking_spot(
     body: ParkingSpotModel, user: User, session: AsyncSession
-) -> Union[ParkingSpot, HTTPException]:
+) -> ParkingSpot | HTTPException:
     """
     Create a new parking spot in the database.
 
@@ -27,13 +27,13 @@ async def create_parking_spot(
         Union[ParkingSpot, str]: The created parking spot object or error message.
     """
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
+    stmt = select(ParkingSpot).filter(ParkingSpot.title == parking_spot.title)
+    existing_parking_spot = await session.execute(stmt)
+    if existing_parking_spot.scalar() is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The parking spot already exists")
     session.add(parking_spot)
-    try:
-        await session.commit()
-        return parking_spot
-    except Exception  as e:
-        await session.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+    await session.commit()
+    return parking_spot
 
 
 async def get_parking_spot_by_id(
