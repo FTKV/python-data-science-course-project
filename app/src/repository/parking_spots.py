@@ -163,13 +163,30 @@ async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
     return await parking_spots
 
 
+async def get_all_occupied_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
+    """
+    Retrieve all occupied parking spots from the database.
+
+    Args:
+        session (AsyncSession): An asynchronous database session.
+
+    Returns:
+        List[ParkingSpot]: A list of occupied parking spot objects.
+    """
+    stmt = select(ParkingSpot).filter(
+        and_(ParkingSpot.is_available == False, ParkingSpot.is_out_of_service == False)
+    )
+    parking_spots = await session.execute(stmt)
+    return parking_spots.scalars()
+
+
 async def get_random_available_parking_spot(session: AsyncSession) -> ParkingSpot:
     """
     Retrieve a random available parking spot from the database.
 
     This function retrieves a random available parking spot from the database.
     It filters parking spots based on availability (is_available == True) and service status
-    (is_out_of_service == False), and then selects one randomly. 
+    (is_out_of_service == False), and then selects one randomly.
 
     Args:
         session (AsyncSession): An asynchronous database session.

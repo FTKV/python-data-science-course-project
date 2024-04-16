@@ -1,6 +1,8 @@
+from pydantic import UUID4
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.models import User, Rate
+from src.database.models import User, Rate, RateDetail
 from src.schemas.rates import RateCreate, RateUpdate, RateResponse
 from typing import List
 
@@ -42,7 +44,7 @@ async def read_rates(offset: int, limit: int, session: AsyncSession) -> List[Rat
     return rates.scalars()
 
 
-async def read_rate_by_id(rate_id: int, session: AsyncSession) -> Rate | None:
+async def read_rate_by_id(rate_id: UUID4 | int, session: AsyncSession) -> Rate | None:
     """
     Gets a rate by ID.
     :param rate_id: The ID of the rate to get.
@@ -100,3 +102,11 @@ async def get_default_rate(session: AsyncSession) -> Rate | None:
     stmt = select(Rate).filter(Rate.title == DEFAULT_RATE)
     rate = await session.execute(stmt)
     return rate.scalar()
+
+
+async def get_rate_amount(rate_id: UUID4 | int, session: AsyncSession):
+    rate = await read_rate_by_id(rate_id, session)
+    stmt = select(RateDetail).filter(RateDetail.rate_id == rate.id)
+    rate_details = await session.execute(stmt)
+    rate_detail = rate_details.scalar()
+    return rate_detail.amount

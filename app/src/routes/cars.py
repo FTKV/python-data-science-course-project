@@ -117,7 +117,7 @@ async def read_cars(
 
 
 @router.put(
-    "",
+    "/{car_id}",
     response_model=CarResponse,
     dependencies=[Depends(allowed_operations_for_self)],
 )
@@ -149,7 +149,7 @@ async def update_car(
 
 
 @router.patch(
-    "",
+    "/{car_id}",
     response_model=CarResponse,
     dependencies=[Depends(allowed_operations_for_all)],
 )
