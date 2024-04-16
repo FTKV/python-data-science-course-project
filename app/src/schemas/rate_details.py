@@ -9,7 +9,6 @@ class RateDetailModel(BaseModel):
     start_hour: time = Field(..., title="Start Hour")
     end_hour: time = Field(..., title="End Hour")
     amount: float = Field(..., title="Amount")
-    user_id: UUID4 | int | None = None
 
 
 class RateDetailUpdate(BaseModel):

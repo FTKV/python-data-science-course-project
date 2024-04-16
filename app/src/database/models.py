@@ -120,9 +120,7 @@ class Car(IdAbstract, CreatedAtUpdatedAtAbstract):
             nullable=True,
         )
     )
-    user: Mapped["User"] = relationship(
-        "User", back_populates="cars", foreign_keys=[user_id]
-    )
+    user: Mapped["User"] = relationship("User", back_populates="cars")
     reservations: Mapped[List["Reservation"]] = relationship(
         "Reservation", back_populates="car"
     )
@@ -177,8 +175,8 @@ class RateDetail(IdAbstract, CreatedAtUpdatedAtAbstract):
 
 
 class Status(enum.Enum):
-    CHECKED_IN: str = "Checked In"
-    CHECKED_OUT: str = "Checked Out"
+    CHECKED_IN: str = "CHECKED_IN"
+    CHECKED_OUT: str = "CHECKED_OUT"
 
 
 class Event(IdAbstract):
@@ -196,10 +194,16 @@ class Event(IdAbstract):
         )
     )
     reservation_id: Mapped[UUID | int] = (
-        mapped_column(Integer, ForeignKey("reservations.id", ondelete="SET NULL"))
+        mapped_column(
+            Integer,
+            ForeignKey("reservations.id", ondelete="SET NULL"),
+            nullable=True,
+        )
         if settings.test
         else mapped_column(
-            UUID(as_uuid=True), ForeignKey("reservations.id", ondelete="SET NULL")
+            UUID(as_uuid=True),
+            ForeignKey("reservations.id", ondelete="SET NULL"),
+            nullable=True,
         )
     )
     parking_spot: Mapped["ParkingSpot"] = relationship(
@@ -241,10 +245,29 @@ class Reservation(IdAbstract, CreatedAtUpdatedAtAbstract):
     debit: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
     credit: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
     user_id: Mapped[UUID | int] = (
-        mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
+        mapped_column(
+            Integer,
+            ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        )
         if settings.test
         else mapped_column(
-            UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+            UUID(as_uuid=True),
+            ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        )
+    )
+    parking_spot_id: Mapped[UUID | int] = (
+        mapped_column(
+            Integer,
+            ForeignKey("parking_spots.id", ondelete="SET NULL"),
+            nullable=True,
+        )
+        if settings.test
+        else mapped_column(
+            UUID(as_uuid=True),
+            ForeignKey("parking_spots.id", ondelete="SET NULL"),
+            nullable=True,
         )
     )
     car_id: Mapped[UUID | int] = (
@@ -285,10 +308,16 @@ class FinancialTransaction(IdAbstract):
     debit: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
     credit: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
     user_id: Mapped[UUID | int] = (
-        mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
+        mapped_column(
+            Integer,
+            ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        )
         if settings.test
         else mapped_column(
-            UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+            UUID(as_uuid=True),
+            ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
         )
     )
     reservation_id: Mapped[UUID | int] = (

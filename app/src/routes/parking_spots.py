@@ -1,4 +1,3 @@
-
 from pydantic import UUID4
 from typing import List
 
@@ -17,7 +16,11 @@ from src.repository.parking_spots import (
     get_all_parking_spots,
     update_parking_spot_service_status,
 )
-from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotResponse, ParkingSpotUpdate
+from src.schemas.parking_spots import (
+    ParkingSpotModel,
+    ParkingSpotResponse,
+    ParkingSpotUpdate,
+)
 
 router = APIRouter(prefix="/parking_spots", tags=["parking_spots"])
 
@@ -25,10 +28,12 @@ allowed_operations_for_moderate = RoleAccess([Role.administrator])
 allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
 
 
-@router.post("/", 
-             response_model=ParkingSpotResponse, 
-             dependencies=[Depends(allowed_operations_for_moderate)],
-             status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ParkingSpotResponse,
+    dependencies=[Depends(allowed_operations_for_moderate)],
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_parking_spot_route(
     body: ParkingSpotModel,
     user: User = Depends(auth_service.get_current_user),
@@ -57,9 +62,11 @@ async def create_parking_spot_route(
     return {"user": parking_spot, "message": "Parking spot created successfully"}
 
 
-@router.get("/{parking_spot_id}", 
-            response_model=ParkingSpotResponse,
-            dependencies=[Depends(allowed_operations_for_self)])
+@router.get(
+    "/{parking_spot_id}",
+    response_model=ParkingSpotResponse,
+    dependencies=[Depends(allowed_operations_for_self)],
+)
 async def get_parking_spot_route(
     parking_spot_id: int,
     session: AsyncSession = Depends(get_session),
@@ -88,10 +95,11 @@ async def get_parking_spot_route(
     return {"user": parking_spot, "message": "Parking spot retrieved successfully"}
 
 
-@router.put("/{parking_spot_id}", 
-            response_model=ParkingSpotResponse,
-            dependencies=[Depends(allowed_operations_for_moderate)]
-            )
+@router.put(
+    "/{parking_spot_id}",
+    response_model=ParkingSpotResponse,
+    dependencies=[Depends(allowed_operations_for_moderate)],
+)
 async def update_parking_spot_route(
     parking_spot_id: int,
     body: ParkingSpotUpdate,
@@ -119,13 +127,17 @@ async def update_parking_spot_route(
     updated_parking_spot = await update_parking_spot(session, parking_spot_id, body)
     if not updated_parking_spot:
         raise HTTPException(status_code=404, detail="Parking spot not found")
-    return {"user": updated_parking_spot, "message": "Parking spot updated successfully"}
+    return {
+        "user": updated_parking_spot,
+        "message": "Parking spot updated successfully",
+    }
 
 
-@router.patch("/{parking_spot_id}/availability", 
-              response_model=ParkingSpotResponse,
-              dependencies=[Depends(allowed_operations_for_moderate)]
-              )
+@router.patch(
+    "/{parking_spot_id}/availability",
+    response_model=ParkingSpotResponse,
+    dependencies=[Depends(allowed_operations_for_moderate)],
+)
 async def update_parking_spot_availability_route(
     parking_spot_id: int,
     available: bool,
@@ -151,16 +163,22 @@ async def update_parking_spot_availability_route(
     Raises:
         HTTPException: If the parking spot with the provided ID is not found.
     """
-    updated_parking_spot = await update_parking_spot_available_status(session, parking_spot_id, available)
+    updated_parking_spot = await update_parking_spot_available_status(
+        session, parking_spot_id, available
+    )
     if not updated_parking_spot:
         raise HTTPException(status_code=404, detail="Parking spot not found")
-    return {"user": updated_parking_spot, "message": "Parking spot availability updated successfully"}
+    return {
+        "user": updated_parking_spot,
+        "message": "Parking spot availability updated successfully",
+    }
 
 
-@router.patch("/{parking_spot_id}/service_status", 
-              response_model=ParkingSpotResponse,
-              dependencies=[Depends(allowed_operations_for_moderate)]
-              )
+@router.patch(
+    "/{parking_spot_id}/service_status",
+    response_model=ParkingSpotResponse,
+    dependencies=[Depends(allowed_operations_for_moderate)],
+)
 async def update_parking_spot_service_status_route(
     parking_spot_id: int,
     out_of_service: bool,
@@ -186,14 +204,20 @@ async def update_parking_spot_service_status_route(
     Raises:
         HTTPException: If the parking spot with the provided ID is not found.
     """
-    updated_parking_spot = await update_parking_spot_service_status(session, parking_spot_id, out_of_service)
+    updated_parking_spot = await update_parking_spot_service_status(
+        session, parking_spot_id, out_of_service
+    )
     if not updated_parking_spot:
         raise HTTPException(status_code=404, detail="Parking spot not found")
-    return {"user": updated_parking_spot, "message": "Parking spot service status updated successfully"}
+    return {
+        "user": updated_parking_spot,
+        "message": "Parking spot service status updated successfully",
+    }
 
 
-@router.delete("/{parking_spot_id}", 
-               dependencies=[Depends(allowed_operations_for_moderate)])
+@router.delete(
+    "/{parking_spot_id}", dependencies=[Depends(allowed_operations_for_moderate)]
+)
 async def delete_parking_spot_route(
     parking_spot_id: int,
     session: AsyncSession = Depends(get_session),
@@ -222,8 +246,11 @@ async def delete_parking_spot_route(
     return {"message": "Parking spot deleted successfully"}
 
 
-@router.get("/all", response_model=List[ParkingSpotResponse],
-            dependencies=[Depends(allowed_operations_for_moderate)])
+@router.get(
+    "/all",
+    response_model=List[ParkingSpotResponse],
+    dependencies=[Depends(allowed_operations_for_moderate)],
+)
 async def get_all_parking_spots_route(
     current_user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
@@ -253,4 +280,7 @@ async def get_all_parking_spots_route(
         HTTPException: If there is an error while retrieving parking spots.
     """
     parking_spots = await get_all_parking_spots(session, skip=skip, limit=limit)
-    return [{"user": parking_spot, "message": "Parking spot retrieved successfully"} for parking_spot in parking_spots]
+    return [
+        {"user": parking_spot, "message": "Parking spot retrieved successfully"}
+        for parking_spot in parking_spots
+    ]

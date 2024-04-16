@@ -5,6 +5,9 @@ from src.schemas.rates import RateCreate, RateUpdate, RateResponse
 from typing import List
 
 
+DEFAULT_RATE = "DEFAULT"
+
+
 async def create_rate(body: RateCreate, user: User, session: AsyncSession) -> Rate:
     """
     Creates a new rate.
@@ -91,3 +94,9 @@ async def delete_rate(rate_id: int, session: AsyncSession) -> Rate | None:
         session.delete(rate)
         await session.commit()
     return rate
+
+
+async def get_default_rate(session: AsyncSession) -> Rate | None:
+    stmt = select(Rate).filter(Rate.title == DEFAULT_RATE)
+    rate = await session.execute(stmt)
+    return rate.scalar()
