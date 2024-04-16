@@ -19,30 +19,6 @@ router = APIRouter(prefix="/rate-details", tags=["rate-details"])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post(
-    "",
-    response_model=RateDetailResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
-)
-async def create_rate_detail(
-    rate_detail_input: RateDetailModel, session: AsyncSession = Depends(get_session)
-):
-    """
-    Handles a POST-operation to create a rate detail.
-
-    :param rate_detail_input: The data for the rate detail to create.
-    :type rate_detail_input: RateDetailInput
-    :param session: The database session.
-    :type session: AsyncSession
-    :return: The newly created rate detail.
-    :rtype: RateDetailResponse
-    """
-    rate_detail = await repository_rate_details.create_rate_detail(
-        rate_detail_input, session
-    )
-    return rate_detail
-
-
 @router.get(
     "",
     response_model=List[RateDetailResponse],
