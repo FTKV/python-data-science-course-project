@@ -24,7 +24,7 @@ async def create_parking_spot(
         session (AsyncSession): An asynchronous database session.
 
     Returns:
-        Union[ParkingSpot, str]: The created parking spot object or error message.
+        Union[ParkingSpot, HTTPException]: The created parking spot object or error message.
     """
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
     stmt = select(ParkingSpot).filter(ParkingSpot.title == parking_spot.title)
