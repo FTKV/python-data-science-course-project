@@ -17,7 +17,7 @@ allowed_operations_for_all = RoleAccess([Role.administrator])
 
 @router.post("", response_model=ReservationModel,
             status_code=status.HTTP_201_CREATED,
-            dependencies=[Depends(allowed_operations_for_all)])
+            dependencies=[Depends(allowed_operations_for_self)])
 async def create_reservation(
     reservation_data: ReservationModel = Depends(ReservationModel.as_form),
     session: AsyncSession = Depends(get_session),

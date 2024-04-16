@@ -50,7 +50,7 @@ async def get_parking_spot_by_id(
 
 
 async def update_parking_spot(
-    session: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate
+    session: AsyncSession, parking_spot_id: UUID | int, new_parking_spot: ParkingSpotUpdate
 ) -> ParkingSpot:
     """
     Update a parking spot in the database.
@@ -63,7 +63,7 @@ async def update_parking_spot(
     Returns:
         Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         parking_spot.title = new_parking_spot.title
         parking_spot.description = new_parking_spot.description
@@ -99,7 +99,7 @@ async def update_parking_spot_available_status(
 
 
 async def update_parking_spot_service_status(
-    session: AsyncSession, parking_spot_id: int, out_of_service: bool
+    session: AsyncSession, parking_spot_id: UUID | int, out_of_service: bool
 ) -> ParkingSpot:
     """
     Update the service status of a parking spot.
@@ -115,7 +115,7 @@ async def update_parking_spot_service_status(
     Returns:
         ParkingSpot: The updated parking spot object, if found, otherwise None.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         parking_spot.is_out_of_service = out_of_service
         await session.commit()
@@ -124,7 +124,7 @@ async def update_parking_spot_service_status(
     return None
 
 
-async def delete_parking_spot(session: AsyncSession, parking_spot_id: int) -> bool:
+async def delete_parking_spot(session: AsyncSession, parking_spot_id: UUID | int) -> bool:
     """
     Delete a parking spot from the database.
 
@@ -135,7 +135,7 @@ async def delete_parking_spot(session: AsyncSession, parking_spot_id: int) -> bo
     Returns:
         bool: True if the parking spot was successfully deleted, False otherwise.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         session.delete(parking_spot)
         await session.commit()
@@ -159,6 +159,19 @@ async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
 
 
 async def get_random_available_parking_spot(session: AsyncSession) -> ParkingSpot:
+    """
+    Retrieve a random available parking spot from the database.
+
+    This function retrieves a random available parking spot from the database.
+    It filters parking spots based on availability (is_available == True) and service status
+    (is_out_of_service == False), and then selects one randomly. 
+
+    Args:
+        session (AsyncSession): An asynchronous database session.
+
+    Returns:
+        ParkingSpot: A random available parking spot object, if found.
+    """
     stmt = (
         select(ParkingSpot)
         .filter(
