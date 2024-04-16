@@ -59,7 +59,7 @@ async def test_request_password_reset_email_before_verification(
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/password_reset_email",
-        json={"email": user.get("email")},
+        data={"email": user.get("email")},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_not_called()
@@ -82,7 +82,7 @@ async def test_set_password_before_verification(client, user, new_password):
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 400, response.text
     data = response.json()
@@ -95,7 +95,7 @@ async def test_request_verification_email(client, user, monkeypatch):
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/verification_email",
-        json={"email": user.get("email")},
+        data={"email": user.get("email")},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_called_once()
@@ -109,7 +109,7 @@ async def test_request_verification_email_wrong_email(client, wrong_email, monke
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/verification_email",
-        json={"email": wrong_email},
+        data={"email": wrong_email},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_not_called()
@@ -273,7 +273,7 @@ async def test_request_password_reset_email(client, user, monkeypatch):
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/password_reset_email",
-        json={"email": user.get("email")},
+        data={"email": user.get("email")},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_called_once()
@@ -289,7 +289,7 @@ async def test_request_password_reset_email_wrong_email(
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/password_reset_email",
-        json={"email": wrong_email},
+        data={"email": wrong_email},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_not_called()
@@ -363,7 +363,7 @@ async def test_set_password_wrong_email_before_set(client, wrong_email, new_pass
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 400, response.text
     data = response.json()
@@ -380,7 +380,7 @@ async def test_set_password_wrong_email_before_set_custom_expire(
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 400, response.text
     data = response.json()
@@ -393,7 +393,7 @@ async def test_request_verification_email_before_set(client, user, monkeypatch):
     monkeypatch.setattr("fastapi.BackgroundTasks.add_task", mock_add_task)
     response = await client.post(
         "/api/auth/verification_email",
-        json={"email": user.get("email")},
+        data={"email": user.get("email")},
     )
     assert response.status_code == 200, response.text
     mock_add_task.assert_not_called()
@@ -418,7 +418,7 @@ async def test_set_password(client, user, new_password):
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 200, response.text
     data = response.json()
@@ -431,7 +431,7 @@ async def test_set_password_wrong_email_after_set(client, wrong_email, new_passw
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 400, response.text
     data = response.json()
@@ -444,7 +444,7 @@ async def test_set_password_wrong_scope_token(client, user, new_password):
     response = await client.patch(
         f"/api/auth/set_password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"password": new_password},
+        data={"password": new_password},
     )
     assert response.status_code == 401, response.text
     data = response.json()
