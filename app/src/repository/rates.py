@@ -1,11 +1,14 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.models import Rate
+from src.database.models import User, Rate
 from src.schemas.rates import RateCreate, RateUpdate, RateResponse
 from typing import List
 
 
-async def create_rate(body: RateCreate, session: AsyncSession) -> Rate:
+DEFAULT_RATE = "DEFAULT"
+
+
+async def create_rate(body: RateCreate, user: User, session: AsyncSession) -> Rate:
     """
     Creates a new rate.
     :param body: The body for the rate to create.
@@ -15,7 +18,7 @@ async def create_rate(body: RateCreate, session: AsyncSession) -> Rate:
     :return: The newly created rate.
     :rtype: Rate
     """
-    rate = Rate(**body.model_dump())
+    rate = Rate(**body.model_dump(), user_id=user.id)
     session.add(rate)
     await session.commit()
     await session.refresh(rate)
@@ -91,3 +94,9 @@ async def delete_rate(rate_id: int, session: AsyncSession) -> Rate | None:
         session.delete(rate)
         await session.commit()
     return rate
+
+
+async def get_default_rate(session: AsyncSession) -> Rate | None:
+    stmt = select(Rate).filter(Rate.title == DEFAULT_RATE)
+    rate = await session.execute(stmt)
+    return rate.scalar()

@@ -3,13 +3,12 @@ from typing import Optional
 from pydantic import BaseModel, Field, UUID4, ConfigDict
 
 
-class RateDetailInput(BaseModel):
+class RateDetailModel(BaseModel):
     start_date: date = Field(..., title="Start Date")
     end_date: date = Field(..., title="End Date")
     start_hour: time = Field(..., title="Start Hour")
     end_hour: time = Field(..., title="End Hour")
     amount: float = Field(..., title="Amount")
-    user_id: UUID4 | int | None = None
 
 
 class RateDetailUpdate(BaseModel):

@@ -3,7 +3,7 @@ Module of parking_spot' CRUD
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, UUID, func
+from sqlalchemy import select, UUID, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
@@ -32,7 +32,7 @@ async def create_parking_spot(
 
 
 async def get_parking_spot_by_id(
-    session: AsyncSession, parking_spot_id: int
+    parking_spot_id: UUID | int, session: AsyncSession
 ) -> ParkingSpot | None:
     """
     Retrieve a parking spot by its ID.
@@ -44,9 +44,9 @@ async def get_parking_spot_by_id(
     Returns:
         Union[ParkingSpot, None]: The parking spot, if found, otherwise None.
     """
-    stmt = select(ParkingSpot).filter(ParkingSpot.user_id == parking_spot_id)
+    stmt = select(ParkingSpot).filter(ParkingSpot.id == parking_spot_id)
     parking_spot = await session.execute(stmt)
-    return parking_spot
+    return parking_spot.scalar()
 
 
 async def update_parking_spot(
@@ -76,7 +76,7 @@ async def update_parking_spot(
 
 
 async def update_parking_spot_available_status(
-    session: AsyncSession, parking_spot_id: int, available: bool
+    parking_spot_id: UUID | int, available: bool, session: AsyncSession
 ) -> ParkingSpot:
     """
     Update the availability status of a parking spot in the database.
@@ -89,7 +89,7 @@ async def update_parking_spot_available_status(
     Returns:
         Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         parking_spot.is_available = available
         await session.commit()
@@ -156,3 +156,17 @@ async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
     stmt = select(ParkingSpot)
     parking_spots = session.execute(stmt)
     return await parking_spots
+
+
+async def get_random_available_parking_spot(session: AsyncSession) -> ParkingSpot:
+    stmt = (
+        select(ParkingSpot)
+        .filter(
+            and_(
+                ParkingSpot.is_available == True, ParkingSpot.is_out_of_service == False
+            )
+        )
+        .order_by(func.random())
+    )
+    parking_spot = await session.execute(stmt)
+    return parking_spot.scalar()
