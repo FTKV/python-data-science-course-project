@@ -4,9 +4,12 @@ Module for performing CRUD operations on reservations.
 
 from typing import Union
 from pydantic import UUID4
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from src.database.models import Reservation, FinancialTransaction
+from sqlalchemy import select, func, and_
+
+from src.database.models import Reservation, FinancialTransaction, Status
+from src.repository import parking_spots as repository_parking_spots
 from src.schemas.reservations import ReservationModel, ReservationUpdateModel
 
 
@@ -133,3 +136,32 @@ async def get_debit_credit_of_reservation(reservation_id, session):
     result = await session.execute(stmt)
     totals = result.all()
     return totals[0] if totals else (0.0, 0.0)
+
+
+async def get_all_in_house_reservations(session: AsyncSession):
+    parking_spots = await repository_parking_spots.get_all_occupied_parking_spots(
+        session
+    )
+    stmt = select(Reservation).filter(
+        and_(
+            Reservation.resv_status == Status.CHECKED_IN.value,
+            Reservation.parking_spot_id.in_(
+                [parking_spot.id for parking_spot in parking_spots.all()]
+            ),
+        )
+    )
+    result = await session.execute(stmt)
+    return result.scalars()
+
+
+async def get_in_house_reservation_by_car_id(
+    car_id: UUID4 | int, session: AsyncSession
+):
+    stmt = select(Reservation).filter(
+        and_(
+            Reservation.resv_status == Status.CHECKED_IN,
+            Reservation.car_id == car_id,
+        )
+    )
+    result = await session.execute(stmt)
+    return result.scalar()
