@@ -24,14 +24,14 @@ from src.schemas.parking_spots import (
 
 router = APIRouter(prefix="/parking_spots", tags=["parking_spots"])
 
-allowed_operations_for_moderate = RoleAccess([Role.administrator])
+allowed_operations_for_all = RoleAccess([Role.administrator])
 allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
 
 
 @router.post(
     "",
     response_model=ParkingSpotResponse,
-    dependencies=[Depends(allowed_operations_for_moderate)],
+    dependencies=[Depends(allowed_operations_for_all)],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_parking_spot_route(
@@ -98,7 +98,7 @@ async def get_parking_spot_route(
 @router.put(
     "/{parking_spot_id}",
     response_model=ParkingSpotResponse,
-    dependencies=[Depends(allowed_operations_for_moderate)],
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def update_parking_spot_route(
     parking_spot_id: int,
@@ -110,7 +110,7 @@ async def update_parking_spot_route(
 
     This endpoint allows administrators to update a parking spot by providing its ID
     and the updated data in the request body. Only users with specific permissions
-    (determined by `allowed_operations_for_moderate`) have access to this endpoint.
+    (determined by `allowed_operations_for_all`) have access to this endpoint.
 
     Args:
         parking_spot_id (int): The ID of the parking spot to update.
@@ -136,7 +136,7 @@ async def update_parking_spot_route(
 @router.patch(
     "/{parking_spot_id}/availability",
     response_model=ParkingSpotResponse,
-    dependencies=[Depends(allowed_operations_for_moderate)],
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def update_parking_spot_availability_route(
     parking_spot_id: int,
@@ -148,7 +148,7 @@ async def update_parking_spot_availability_route(
 
     This endpoint allows administrators to update the availability status of a parking spot
     by providing its ID and the new availability status in the request body. Only users with
-    specific permissions (determined by `allowed_operations_for_moderate`) have access to this
+    specific permissions (determined by `allowed_operations_for_all`) have access to this
     endpoint.
 
     Args:
@@ -177,7 +177,7 @@ async def update_parking_spot_availability_route(
 @router.patch(
     "/{parking_spot_id}/service_status",
     response_model=ParkingSpotResponse,
-    dependencies=[Depends(allowed_operations_for_moderate)],
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def update_parking_spot_service_status_route(
     parking_spot_id: int,
@@ -189,7 +189,7 @@ async def update_parking_spot_service_status_route(
 
     This endpoint allows administrators to update the service status (in-service or out-of-service)
     of a parking spot by providing its ID and the new service status in the request body.
-    Only users with specific permissions (determined by `allowed_operations_for_moderate`) have access
+    Only users with specific permissions (determined by `allowed_operations_for_all`) have access
     to this endpoint.
 
     Args:
@@ -215,9 +215,7 @@ async def update_parking_spot_service_status_route(
     }
 
 
-@router.delete(
-    "/{parking_spot_id}", dependencies=[Depends(allowed_operations_for_moderate)]
-)
+@router.delete("/{parking_spot_id}", dependencies=[Depends(allowed_operations_for_all)])
 async def delete_parking_spot_route(
     parking_spot_id: int,
     session: AsyncSession = Depends(get_session),
@@ -226,7 +224,7 @@ async def delete_parking_spot_route(
     Delete a parking spot by ID.
 
     This endpoint allows administrators to delete a parking spot by providing its ID.
-    Only users with specific permissions (determined by `allowed_operations_for_moderate`)
+    Only users with specific permissions (determined by `allowed_operations_for_all`)
     have access to this endpoint.
 
     Args:
@@ -247,12 +245,11 @@ async def delete_parking_spot_route(
 
 
 @router.get(
-    "/all",
+    "",
     response_model=List[ParkingSpotResponse],
-    dependencies=[Depends(allowed_operations_for_moderate)],
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def get_all_parking_spots_route(
-    current_user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1),
@@ -261,7 +258,7 @@ async def get_all_parking_spots_route(
     Retrieve all parking spots.
 
     This endpoint allows administrators to retrieve all parking spots from the database.
-    Only users with specific permissions (determined by `allowed_operations_for_moderate`)
+    Only users with specific permissions (determined by `allowed_operations_for_all`)
     have access to this endpoint.
 
     Args:
