@@ -81,7 +81,8 @@ async def update_rate_detail(
     rate_detail = await read_rate_detail_by_id(rate_detail_id, session)
     if rate_detail:
         for key, value in body.model_dump().items():
-            setattr(rate_detail, key, value)
+            if hasattr(rate_detail, key) and value is not None:
+                setattr(rate_detail, key, value)
         await session.commit()
     return rate_detail
 

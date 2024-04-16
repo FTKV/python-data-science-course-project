@@ -62,6 +62,11 @@ async def create_event(
     if event_type == Status.CHECKED_IN:
         if not car:
             car = await repository_cars.create_car(data, session)
+        if await repository_cars.is_car_blocked(car.plate, session):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Car is blocked!",
+            )
         parking_spot = await repository_parking_spots.get_random_available_parking_spot(
             session
         )

@@ -35,7 +35,7 @@ allowed_operations_for_self = RoleAccess([Role.administrator, Role.user])
     status_code=status.HTTP_201_CREATED,
 )
 async def create_parking_spot_route(
-    body: ParkingSpotModel,
+    data: ParkingSpotModel = Depends(ParkingSpotModel.as_form),
     user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -46,7 +46,7 @@ async def create_parking_spot_route(
     the role of administrator have permission to access this endpoint.
 
     Args:
-        body (ParkingSpotModel): The data to create the parking spot.
+        data (ParkingSpotModel): The data to create the parking spot.
         user (User, optional): The current user accessing the endpoint. Defaults to
             Depends(auth_service.get_current_user).
         session (AsyncSession, optional): The asynchronous session to interact with
@@ -58,7 +58,7 @@ async def create_parking_spot_route(
     Raises:
         HTTPException: If the current user is not authorized to access the endpoint.
     """
-    parking_spot = await create_parking_spot(body, user, session)
+    parking_spot = await create_parking_spot(data, user, session)
     return {"user": parking_spot, "message": "Parking spot created successfully"}
 
 
@@ -102,7 +102,7 @@ async def get_parking_spot_route(
 )
 async def update_parking_spot_route(
     parking_spot_id: int,
-    body: ParkingSpotUpdate,
+    data: ParkingSpotUpdate = Depends(ParkingSpotUpdate.as_form),
     session: AsyncSession = Depends(get_session),
 ):
     """
@@ -114,7 +114,7 @@ async def update_parking_spot_route(
 
     Args:
         parking_spot_id (int): The ID of the parking spot to update.
-        body (ParkingSpotUpdate): The updated data for the parking spot.
+        data (ParkingSpotUpdate): The updated data for the parking spot.
         session (AsyncSession, optional): The asynchronous session to interact with
             the database. Defaults to Depends(get_session).
 
@@ -124,7 +124,7 @@ async def update_parking_spot_route(
     Raises:
         HTTPException: If the parking spot with the provided ID is not found.
     """
-    updated_parking_spot = await update_parking_spot(session, parking_spot_id, body)
+    updated_parking_spot = await update_parking_spot(session, parking_spot_id, data)
     if not updated_parking_spot:
         raise HTTPException(status_code=404, detail="Parking spot not found")
     return {
@@ -251,7 +251,7 @@ async def delete_parking_spot_route(
 )
 async def get_all_parking_spots_route(
     session: AsyncSession = Depends(get_session),
-    skip: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0),
     limit: int = Query(10, ge=1),
 ):
     """
@@ -266,7 +266,7 @@ async def get_all_parking_spots_route(
             Depends(auth_service.get_current_user).
         session (AsyncSession, optional): The asynchronous session to interact with
             the database. Defaults to Depends(get_session).
-        skip (int, optional): The number of records to skip. Defaults to 0.
+        offset (int, optional): The number of records to offset. Defaults to 0.
         limit (int, optional): The maximum number of records to return. Defaults to 10.
 
     Returns:
@@ -276,7 +276,7 @@ async def get_all_parking_spots_route(
     Raises:
         HTTPException: If there is an error while retrieving parking spots.
     """
-    parking_spots = await get_all_parking_spots(session, skip=skip, limit=limit)
+    parking_spots = await get_all_parking_spots(session, offset=offset, limit=limit)
     return [
         {"user": parking_spot, "message": "Parking spot retrieved successfully"}
         for parking_spot in parking_spots

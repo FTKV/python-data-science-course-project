@@ -48,6 +48,7 @@ class CarUpdateModel(BaseModel):
     user_id: UUID4 | int | None = None
 
 
+@as_form
 class CarPatchModel(BaseModel):
     is_to_block: bool
 
@@ -60,7 +61,7 @@ class CarResponse(BaseModel):
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
-    is_blacklisted: bool
+    is_blocked: bool
     created_at: datetime
     updated_at: datetime
     user_id: UUID4 | int | None = None
