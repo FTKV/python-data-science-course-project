@@ -2,7 +2,6 @@
 Module with declaring of connections to PostgreSQL and Redis
 """
 
-
 from fastapi import HTTPException, status
 import redis.asyncio as redis
 from sqlalchemy.exc import SQLAlchemyError
@@ -66,4 +65,4 @@ async def get_redis_db1():
             detail=f"Redis error: {str(error_message)}",
         )
     finally:
-        await client.close()
+        await client.aclose()
