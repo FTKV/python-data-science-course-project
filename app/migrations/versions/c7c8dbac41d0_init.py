@@ -1,8 +1,8 @@
 """'Init'
 
-Revision ID: d58d2a72c53c
+Revision ID: c7c8dbac41d0
 Revises: 
-Create Date: 2024-04-16 03:21:18.786965
+Create Date: 2024-04-16 23:22:30.227173
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd58d2a72c53c'
+revision: str = 'c7c8dbac41d0'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -47,7 +47,7 @@ def upgrade() -> None:
     sa.Column('model', sa.String(length=128), nullable=True),
     sa.Column('color', sa.String(length=32), nullable=True),
     sa.Column('description', sa.String(length=1024), nullable=True),
-    sa.Column('is_blacklisted', sa.Boolean(), nullable=False),
+    sa.Column('is_blocked', sa.Boolean(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),

@@ -7,7 +7,7 @@ from src.database.connect_db import get_session
 from src.database.models import User, Role
 from src.repository import rates as repository_rates
 from src.repository import rate_details as repository_rate_details
-from src.schemas.rates import RateBase, RateUpdate, RateResponse
+from src.schemas.rates import RateModel, RateUpdate, RateResponse
 from src.schemas.rate_details import (
     RateDetailModel,
     RateDetailUpdate,
@@ -25,7 +25,7 @@ allowed_operations_for_all = RoleAccess([Role.administrator])
     "", response_model=RateResponse, dependencies=[Depends(allowed_operations_for_all)]
 )
 async def create_rate(
-    rate: RateBase,
+    rate: RateModel = Depends(RateModel.as_form),
     user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -75,13 +75,15 @@ async def read_rates(
     dependencies=[Depends(allowed_operations_for_all)],
 )
 async def update_rate(
-    rate_id: int, rate_update: RateUpdate, session: AsyncSession = Depends(get_session)
+    rate_id: UUID4 | int,
+    rate_update: RateUpdate = Depends(RateUpdate.as_form),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Handles a PUT-operation to update a rate.
 
     :param rate_id: The ID of the rate to update.
-    :type rate_id: int
+    :type rate_id: UUID4 | int
     :param rate_update: The updated data for the rate.
     :type rate_update: RateUpdate
     :param session: The database session.
@@ -102,12 +104,14 @@ async def update_rate(
     response_model=RateResponse,
     dependencies=[Depends(allowed_operations_for_all)],
 )
-async def delete_rate(rate_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_rate(
+    rate_id: UUID4 | int, session: AsyncSession = Depends(get_session)
+):
     """
     Handles a DELETE-operation to delete a rate.
 
     :param rate_id: The ID of the rate to delete.
-    :type rate_id: int
+    :type rate_id: UUID4 | int
     :param session: The database session.
     :type session: AsyncSession
     :return: The deleted rate.
@@ -128,7 +132,7 @@ async def delete_rate(rate_id: int, session: AsyncSession = Depends(get_session)
 )
 async def add_rate_detail_to_rate(
     rate_id: UUID4 | int,
-    rate_detail_input: RateDetailModel,
+    rate_detail_input: RateDetailModel = Depends(RateDetailModel.as_form),
     user: User = Depends(auth_service.get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -136,7 +140,7 @@ async def add_rate_detail_to_rate(
     Handles a POST-operation to create a rate detail.
 
     :param rate_id: The ID of the rate to which the rate detail will be added.
-    :type rate_id: Union[UUID4, int]
+    :type rate_id: UUID4 | int
     :param rate_detail_input: The data for the rate detail to create.
     :type rate_detail_input: RateDetailModel
     :param session: The database session.
@@ -165,7 +169,7 @@ async def read_rate_details_for_rate(
     Handles a GET-operation to get all rate details for a rate.
 
     :param rate_id: The ID of the rate for which rate details will be fetched.
-    :type rate_id: Union[UUID4, int]
+    :type rate_id: UUID4 | int
     :param offset: The number of rate details to skip.
     :type offset: int
     :param limit: The maximum number of rate details to return.
@@ -188,17 +192,17 @@ async def read_rate_details_for_rate(
 )
 async def update_rate_detail_for_rate(
     rate_id: UUID4 | int,
-    rate_detail_id: int,
-    rate_detail_update: RateDetailUpdate,
+    rate_detail_id: UUID4 | int,
+    rate_detail_update: RateDetailUpdate = Depends(RateDetailUpdate.as_form),
     session: AsyncSession = Depends(get_session),
 ):
     """
     Handles a PUT-operation to update a rate detail for a rate.
 
     :param rate_id: The ID of the rate for which the rate detail will be updated.
-    :type rate_id: Union[UUID4, int]
+    :type rate_id: UUID4 | int
     :param rate_detail_id: The ID of the rate detail to update.
-    :type rate_detail_id: int
+    :type rate_detail_id: UUID4 | int
     :param rate_detail_update: The updated data for the rate detail.
     :type rate_detail_update: RateDetailUpdate
     :param session: The database session.
@@ -223,16 +227,16 @@ async def update_rate_detail_for_rate(
 )
 async def delete_rate_detail_for_rate(
     rate_id: UUID4 | int,
-    rate_detail_id: int,
+    rate_detail_id: UUID4 | int,
     session: AsyncSession = Depends(get_session),
 ):
     """
     Handles a DELETE-operation to delete a rate detail for a rate.
 
     :param rate_id: The ID of the rate for which the rate detail will be deleted.
-    :type rate_id: Union[UUID4, int]
+    :type rate_id: UUID4 | int
     :param rate_detail_id: The ID of the rate detail to delete.
-    :type rate_detail_id: int
+    :type rate_detail_id: UUID4 | int
     :param session: The database session.
     :type session: AsyncSession
     :return: The deleted rate detail.

@@ -160,6 +160,22 @@ async def block_or_unblock_car(
     car = await session.execute(stmt)
     car = car.scalar()
     if car:
-        car.is_blacklisted = is_to_block
+        car.is_blocked = is_to_block
         await session.commit()
     return car
+
+
+async def is_car_blocked(plate: str, session: AsyncSession) -> bool | None:
+    """
+    Checks whether the car with the specified plate is blocked or not.
+
+    :param plate: The plate of the car to check.
+    :type plate: str
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: True or false according to whether the car is blocked or not, or None if it doesn't exist.
+    :rtype: bool | None
+    """
+    car = await read_car_by_plate(plate, session)
+    if car:
+        return car.is_blocked

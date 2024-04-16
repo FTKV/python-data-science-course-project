@@ -155,7 +155,7 @@ async def update_car(
 )
 async def block_or_unblock_car(
     car_id: UUID4 | int,
-    body: CarPatchModel,
+    body: CarPatchModel = Depends(CarPatchModel.as_form),
     session: AsyncSession = Depends(get_session),
 ):
     """

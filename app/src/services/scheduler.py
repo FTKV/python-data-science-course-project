@@ -2,6 +2,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.database.connect_db import get_session
 from src.database.models import TrxType
+from src.repository import cars as repository_cars
 from src.repository import financial_transactions as repository_financial_transactions
 from src.repository import rates as repository_rates
 from src.repository import reservations as repository_reservations
@@ -26,6 +27,12 @@ async def make_charges_to_in_house_reservations():
             amount = await repository_rates.get_rate_amount(
                 reservation.rate_id, session
             )
+            if not reservation.user_id:
+                car = await repository_cars.read_car_by_car_id(
+                    reservation.car_id, session
+                )
+                if car.user_id:
+                    reservation.user_id = car.user_id
             data = FinancialTransactionModel(
                 trx_type=TrxType.CHARGE,
                 debit=amount,
