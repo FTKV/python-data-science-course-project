@@ -5,7 +5,8 @@ Module of parking_spot' CRUD
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, UUID, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from fastapi import HTTPException, status
+from typing import List, Optional, Union
 
 from src.database.models import User, ParkingSpot
 from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSpotUpdate
@@ -13,7 +14,7 @@ from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSp
 
 async def create_parking_spot(
     body: ParkingSpotModel, user: User, session: AsyncSession
-) -> ParkingSpot:
+) -> ParkingSpot | HTTPException:
     """
     Create a new parking spot in the database.
 
@@ -23,9 +24,13 @@ async def create_parking_spot(
         session (AsyncSession): An asynchronous database session.
 
     Returns:
-        ParkingSpot: The created parking spot object.
+        Union[ParkingSpot, HTTPException]: The created parking spot object or error message.
     """
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
+    stmt = select(ParkingSpot).filter(ParkingSpot.title == parking_spot.title)
+    existing_parking_spot = await session.execute(stmt)
+    if existing_parking_spot.scalar() is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The parking spot already exists")
     session.add(parking_spot)
     await session.commit()
     return parking_spot
@@ -38,11 +43,11 @@ async def get_parking_spot_by_id(
     Retrieve a parking spot by its ID.
 
     Args:
+        parking_spot_id (UUID | int): The ID of the parking spot to retrieve.
         session (AsyncSession): An asynchronous database session.
-        parking_spot_id (int): The ID of the parking spot to retrieve.
 
     Returns:
-        Union[ParkingSpot, None]: The parking spot, if found, otherwise None.
+        ParkingSpot | None: The parking spot, if found, otherwise None.
     """
     stmt = select(ParkingSpot).filter(ParkingSpot.id == parking_spot_id)
     parking_spot = await session.execute(stmt)
@@ -50,7 +55,7 @@ async def get_parking_spot_by_id(
 
 
 async def update_parking_spot(
-    session: AsyncSession, parking_spot_id: int, new_parking_spot: ParkingSpotUpdate
+    parking_spot_id: UUID | int, new_parking_spot: ParkingSpotUpdate, session: AsyncSession
 ) -> ParkingSpot:
     """
     Update a parking spot in the database.
@@ -63,7 +68,7 @@ async def update_parking_spot(
     Returns:
         Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         parking_spot.title = new_parking_spot.title
         parking_spot.description = new_parking_spot.description
@@ -77,17 +82,17 @@ async def update_parking_spot(
 
 async def update_parking_spot_available_status(
     parking_spot_id: UUID | int, available: bool, session: AsyncSession
-) -> ParkingSpot:
+) -> ParkingSpot | None:
     """
     Update the availability status of a parking spot in the database.
 
     Args:
-        session (AsyncSession): An asynchronous database session.
-        parking_spot_id (int): The ID of the parking spot to update.
+        parking_spot_id (UUID | int): The ID of the parking spot to update.
         available (bool): The new availability status of the parking spot.
+        session (AsyncSession): An asynchronous database session.
 
     Returns:
-        Union[ParkingSpot, None]: The updated parking spot object, if found, otherwise None.
+        ParkingSpot | None: The updated parking spot object, if found, otherwise None.
     """
     parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
@@ -99,7 +104,7 @@ async def update_parking_spot_available_status(
 
 
 async def update_parking_spot_service_status(
-    session: AsyncSession, parking_spot_id: int, out_of_service: bool
+    parking_spot_id: UUID | int, out_of_service: bool, session: AsyncSession
 ) -> ParkingSpot:
     """
     Update the service status of a parking spot.
@@ -115,7 +120,7 @@ async def update_parking_spot_service_status(
     Returns:
         ParkingSpot: The updated parking spot object, if found, otherwise None.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         parking_spot.is_out_of_service = out_of_service
         await session.commit()
@@ -124,7 +129,7 @@ async def update_parking_spot_service_status(
     return None
 
 
-async def delete_parking_spot(session: AsyncSession, parking_spot_id: int) -> bool:
+async def delete_parking_spot(parking_spot_id: UUID | int, session: AsyncSession) -> bool:
     """
     Delete a parking spot from the database.
 
@@ -135,7 +140,7 @@ async def delete_parking_spot(session: AsyncSession, parking_spot_id: int) -> bo
     Returns:
         bool: True if the parking spot was successfully deleted, False otherwise.
     """
-    parking_spot = await get_parking_spot_by_id(parking_spot_id)
+    parking_spot = await get_parking_spot_by_id(parking_spot_id, session)
     if parking_spot:
         session.delete(parking_spot)
         await session.commit()
@@ -158,7 +163,37 @@ async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
     return await parking_spots
 
 
+async def get_all_occupied_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
+    """
+    Retrieve all occupied parking spots from the database.
+
+    Args:
+        session (AsyncSession): An asynchronous database session.
+
+    Returns:
+        List[ParkingSpot]: A list of occupied parking spot objects.
+    """
+    stmt = select(ParkingSpot).filter(
+        and_(ParkingSpot.is_available == False, ParkingSpot.is_out_of_service == False)
+    )
+    parking_spots = await session.execute(stmt)
+    return parking_spots.scalars()
+
+
 async def get_random_available_parking_spot(session: AsyncSession) -> ParkingSpot:
+    """
+    Retrieve a random available parking spot from the database.
+
+    This function retrieves a random available parking spot from the database.
+    It filters parking spots based on availability (is_available == True) and service status
+    (is_out_of_service == False), and then selects one randomly.
+
+    Args:
+        session (AsyncSession): An asynchronous database session.
+
+    Returns:
+        ParkingSpot: A random available parking spot object, if found.
+    """
     stmt = (
         select(ParkingSpot)
         .filter(

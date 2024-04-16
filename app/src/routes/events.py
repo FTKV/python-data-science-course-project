@@ -22,7 +22,7 @@ from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 from src.schemas.cars import CarRecognizedPlateModel
 from src.schemas.events import EventModel, EventImageModel, EventDB
-from src.schemas.reservations import ReservationModel
+from src.schemas.reservations import ReservationModel, ReservationUpdateModel
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -59,42 +59,74 @@ async def create_event(
             detail="Car not found or license plate was recognized incorrectly",
         )
     car = await repository_cars.read_car_by_plate(data.plate, session)
-    if not car:
-        car = await repository_cars.create_car(data, session)
-    parking_spot = await repository_parking_spots.get_random_available_parking_spot(
-        session
-    )
-    if not parking_spot:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No available parking spots",
+    if event_type == Status.CHECKED_IN:
+        if not car:
+            car = await repository_cars.create_car(data, session)
+        parking_spot = await repository_parking_spots.get_random_available_parking_spot(
+            session
         )
-    rate = await repository_rates.get_default_rate(session)
-    data = ReservationModel(
-        resv_status=event_type,
-        user_id=car.user_id,
-        parking_spot_id=parking_spot.id,
-        car_id=car.id,
-        rate_id=rate.id,
+        if not parking_spot:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No available parking spots",
+            )
+        rate = await repository_rates.get_default_rate(session)
+        data = ReservationModel(
+            resv_status=event_type,
+            user_id=car.user_id,
+            parking_spot_id=parking_spot.id,
+            car_id=car.id,
+            rate_id=rate.id,
+        )
+        reservation = await repository_reservations.create_reservation(data, session)
+        await repository_parking_spots.update_parking_spot_available_status(
+            reservation.parking_spot_id, False, session
+        )
+    elif event_type == Status.CHECKED_OUT:
+        if not car:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Car not found or license plate was recognized incorrectly",
+            )
+        reservation = await repository_reservations.get_in_house_reservation_by_car_id(
+            car.id, session
+        )
+        balance = reservation.debit - reservation.credit
+        if balance > 0:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=f"Balance is not zero! Should be payment for {balance} UAH",
+            )
+        if balance < 0:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=f"Balance is not zero! Should be withdraw for {balance} UAH",
+            )
+        data = ReservationUpdateModel(
+            resv_status=event_type,
+            user_id=car.user_id,
+        )
+        reservation = await repository_reservations.update_reservation(
+            reservation.id, data, session
+        )
+        await repository_parking_spots.update_parking_spot_available_status(
+            reservation.parking_spot_id, True, session
+        )
+    data = EventModel(
+        parking_spot_id=reservation.parking_spot_id, reservation_id=reservation.id
     )
-    await repository_parking_spots.update_parking_spot_available_status(
-        parking_spot.id, False, session
-    )
-    reservation = await repository_reservations.create_reservation(data, session)
-    data = EventModel(parking_spot_id=parking_spot.id, reservation_id=reservation.id)
     event = await repository_events.create_event(event_type, data, session)
     return event
 
 
 @router.get(
-    "/{id}",
+    "/{event_id}",
     response_model=EventDB,
     dependencies=[Depends(allowed_operations_for_all)],
 )
 async def read_event(
     event_id: UUID4 | int,
     session: AsyncSession = Depends(get_session),
-    cache: Redis = Depends(get_redis_db1),
 ):
     """
     Handles a GET-operation to '/{id}' event subroute and gets the event with specified id.

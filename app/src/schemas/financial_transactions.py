@@ -17,8 +17,10 @@ from pydantic import (
 )
 
 from src.database.models import TrxType
+from src.utils.as_form import as_form
 
 
+@as_form
 class FinancialTransactionModel(BaseModel):
     trx_type: TrxType
     debit: float
@@ -48,5 +50,5 @@ class FinancialTransactionResponse(BaseModel):
     trx_type: TrxType
     debit: float
     credit: float
-    user_id: UUID4 | int
+    user_id: UUID4 | int | None = None
     reservation_id: UUID4 | int

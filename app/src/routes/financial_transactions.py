@@ -37,26 +37,31 @@ allowed_operations_for_all = RoleAccess([Role.administrator])
     dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_financial_transaction(
-    body: FinancialTransactionModel,
+    data: FinancialTransactionModel = Depends(FinancialTransactionModel.as_form),
     session: AsyncSession = Depends(get_session),
 ):
+    reservation = await repository_reservations.get_reservation_by_id(
+        data.reservation_id, session
+    )
+    if not data.user_id and reservation.user_id:
+        data.user_id = reservation.user_id
     financial_transaction = (
         await repository_financial_transactions.create_financial_transaction(
-            body, session
+            data, session
         )
     )
     debit, credit = await repository_reservations.get_debit_credit_of_reservation(
         financial_transaction.reservation_id, session
     )
-    body = ReservationUpdateModel(debit=debit, credit=credit)
+    data = ReservationUpdateModel(debit=debit, credit=credit)
     await repository_reservations.update_reservation(
-        financial_transaction.reservation_id, body, session
+        financial_transaction.reservation_id, data, session
     )
     return financial_transaction
 
 
 @router.get(
-    "",
+    "/{fin_trans_id}",
     response_model=FinancialTransactionResponse,
     dependencies=[Depends(allowed_operations_for_all)],
 )
@@ -88,7 +93,7 @@ async def read_financial_transaction(
 
 
 @router.get(
-    "/all",
+    "",
     response_model=List[FinancialTransactionResponse],
     dependencies=[Depends(allowed_operations_for_all)],
 )
