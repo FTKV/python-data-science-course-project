@@ -131,5 +131,5 @@ async def get_debit_credit_of_reservation(reservation_id, session):
         .group_by(FinancialTransaction.reservation_id)
     )
     result = await session.execute(stmt)
-    totals = result.scalar_one_or_none()
-    return totals if totals else (0.0, 0.0)
+    totals = result.all()
+    return totals[0] if totals else (0.0, 0.0)

@@ -32,4 +32,13 @@ class RateResponse(BaseModel):
     title: str = Field(..., title="Title", min_length=2, max_length=32)
     description: str = Field(None, title="Description", max_length=1024)
     is_daily: bool = Field(False, title="Is Daily")
+
+
+class RateDb(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID4 | int
+    title: str = Field(..., title="Title", min_length=2, max_length=32)
+    description: str = Field(None, title="Description", max_length=1024)
+    is_daily: bool = Field(False, title="Is Daily")
     rate_details: List[RateDetailResponse] = []

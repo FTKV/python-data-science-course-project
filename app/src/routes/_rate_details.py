@@ -7,7 +7,7 @@ from src.database.connect_db import get_session
 from src.database.models import Role
 from src.repository import rate_details as repository_rate_details
 from src.schemas.rate_details import (
-    RateDetailInput,
+    RateDetailModel,
     RateDetailUpdate,
     RateDetailResponse,
 )
@@ -19,10 +19,13 @@ router = APIRouter(prefix="/rate-details", tags=["rate-details"])
 allowed_operations_for_all = RoleAccess([Role.administrator])
 
 
-@router.post("", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)],
+@router.post(
+    "",
+    response_model=RateDetailResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
 )
 async def create_rate_detail(
-    rate_detail_input: RateDetailInput, session: AsyncSession = Depends(get_session)
+    rate_detail_input: RateDetailModel, session: AsyncSession = Depends(get_session)
 ):
     """
     Handles a POST-operation to create a rate detail.
@@ -40,7 +43,11 @@ async def create_rate_detail(
     return rate_detail
 
 
-@router.get("", response_model=List[RateDetailResponse], dependencies=[Depends(allowed_operations_for_all)])
+@router.get(
+    "",
+    response_model=List[RateDetailResponse],
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def read_rate_details(
     offset: int = 0, limit: int = 10, session: AsyncSession = Depends(get_session)
 ):
@@ -62,7 +69,11 @@ async def read_rate_details(
     return rate_details
 
 
-@router.put("/{rate_detail_id}", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)])
+@router.put(
+    "/{rate_detail_id}",
+    response_model=RateDetailResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def update_rate_detail(
     rate_detail_id: int,
     rate_detail_update: RateDetailUpdate,
@@ -90,7 +101,11 @@ async def update_rate_detail(
     return rate_detail
 
 
-@router.delete("/{rate_detail_id}", response_model=RateDetailResponse, dependencies=[Depends(allowed_operations_for_all)])
+@router.delete(
+    "/{rate_detail_id}",
+    response_model=RateDetailResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
 async def delete_rate_detail(
     rate_detail_id: int, session: AsyncSession = Depends(get_session)
 ):
