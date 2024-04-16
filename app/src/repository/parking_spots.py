@@ -5,7 +5,8 @@ Module of parking_spot' CRUD
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, UUID, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from fastapi import HTTPException, status
+from typing import List, Optional, Union
 
 from src.database.models import User, ParkingSpot
 from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSpotUpdate
@@ -13,7 +14,7 @@ from src.schemas.parking_spots import ParkingSpotModel, ParkingSpotDB, ParkingSp
 
 async def create_parking_spot(
     body: ParkingSpotModel, user: User, session: AsyncSession
-) -> ParkingSpot:
+) -> Union[ParkingSpot, HTTPException]:
     """
     Create a new parking spot in the database.
 
@@ -23,12 +24,16 @@ async def create_parking_spot(
         session (AsyncSession): An asynchronous database session.
 
     Returns:
-        ParkingSpot: The created parking spot object.
+        Union[ParkingSpot, str]: The created parking spot object or error message.
     """
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
     session.add(parking_spot)
-    await session.commit()
-    return parking_spot
+    try:
+        await session.commit()
+        return parking_spot
+    except Exception  as e:
+        await session.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
 
 async def get_parking_spot_by_id(
@@ -50,7 +55,7 @@ async def get_parking_spot_by_id(
 
 
 async def update_parking_spot(
-    session: AsyncSession, parking_spot_id: UUID | int, new_parking_spot: ParkingSpotUpdate
+    parking_spot_id: UUID | int, new_parking_spot: ParkingSpotUpdate, session: AsyncSession
 ) -> ParkingSpot:
     """
     Update a parking spot in the database.
@@ -99,7 +104,7 @@ async def update_parking_spot_available_status(
 
 
 async def update_parking_spot_service_status(
-    session: AsyncSession, parking_spot_id: UUID | int, out_of_service: bool
+    parking_spot_id: UUID | int, out_of_service: bool, session: AsyncSession
 ) -> ParkingSpot:
     """
     Update the service status of a parking spot.
@@ -124,7 +129,7 @@ async def update_parking_spot_service_status(
     return None
 
 
-async def delete_parking_spot(session: AsyncSession, parking_spot_id: UUID | int) -> bool:
+async def delete_parking_spot(parking_spot_id: UUID | int, session: AsyncSession) -> bool:
     """
     Delete a parking spot from the database.
 
