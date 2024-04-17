@@ -1,10 +1,9 @@
-import asyncio
 import unittest
 from unittest.mock import MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.src.database.models import Reservation
-from app.src.schemas.reservations import ReservationModel, ReservationUpdateModel
-from app.src.repository.reservations import (
+from src.database.models import Reservation
+from src.schemas.reservations import ReservationModel, ReservationUpdateModel
+from src.repository.reservations import (
     create_reservation,
     get_reservation_by_id,
     get_reservations_by_user_id,
