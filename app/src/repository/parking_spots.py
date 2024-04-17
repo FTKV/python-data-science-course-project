@@ -29,7 +29,7 @@ async def create_parking_spot(
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
     stmt = select(ParkingSpot).filter(ParkingSpot.title == parking_spot.title)
     existing_parking_spot = await session.execute(stmt)
-    if existing_parking_spot.scalar() is not None:
+    if existing_parking_spot is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The parking spot already exists")
     session.add(parking_spot)
     await session.commit()
