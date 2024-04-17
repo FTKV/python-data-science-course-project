@@ -2,43 +2,31 @@
 Module of rates' schemas
 """
 
-from typing import List
+from typing import Annotated
 from pydantic import BaseModel, Field, UUID4, ConfigDict
 from typing import Optional
 
-from src.schemas.rate_details import RateDetailResponse
+from src.utils.as_form import as_form
 
 
-class RateBase(BaseModel):
-    title: str = Field(..., title="Title", min_length=2, max_length=32)
-    description: str = Field(None, title="Description", max_length=1024)
-    is_daily: bool = Field(False, title="Is Daily")
+@as_form
+class RateModel(BaseModel):
+    title: Annotated[str, Field(min_length=2, max_length=32)]
+    description: Annotated[str | None, Field(max_length=1024)] = None
+    is_daily: bool = False
 
 
-class RateCreate(RateBase):
-    user_id: UUID4 | int | None = None
-
-
+@as_form
 class RateUpdate(BaseModel):
-    title: Optional[str] = Field(None, title="Title", min_length=2, max_length=32)
-    description: Optional[str] = Field(None, title="Description", max_length=1024)
-    is_daily: Optional[bool] = Field(None, title="Is Daily")
+    title: Annotated[str | None, Field(min_length=2, max_length=32)] = None
+    description: Annotated[str | None, Field(max_length=1024)] = None
+    is_daily: bool | None = None
 
 
 class RateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID4 | int
-    title: str = Field(..., title="Title", min_length=2, max_length=32)
-    description: str = Field(None, title="Description", max_length=1024)
-    is_daily: bool = Field(False, title="Is Daily")
-
-
-class RateDb(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID4 | int
-    title: str = Field(..., title="Title", min_length=2, max_length=32)
-    description: str = Field(None, title="Description", max_length=1024)
-    is_daily: bool = Field(False, title="Is Daily")
-    rate_details: List[RateDetailResponse] = []
+    title: Annotated[str, Field(min_length=2, max_length=32)]
+    description: Annotated[str | None, Field(max_length=1024)] = None
+    is_daily: bool = False
