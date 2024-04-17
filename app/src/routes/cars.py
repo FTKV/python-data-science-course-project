@@ -5,15 +5,13 @@ Module of cars' routes
 from typing import List
 
 from pydantic import UUID4
-from fastapi import APIRouter, HTTPException, Depends, Form, status, Query
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 from fastapi.responses import FileResponse
-from redis.asyncio.client import Redis
 from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.conf.config import REPORTS_DIR
-from src.database.connect_db import get_session, get_redis_db1
-from src.database.models import User, Role
+from src.database.connect_db import get_session
+from src.database.models import Role
 from src.reports import reservations as reports_reservations
 from src.repository import cars as repository_cars
 from src.schemas.cars import (
@@ -24,7 +22,6 @@ from src.schemas.cars import (
     CarResponse,
 )
 from src.services.ai_models import process_image
-from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 
 
@@ -185,16 +182,10 @@ async def block_or_unblock_car(
 @router.get(
     "/{car_id}/reservations",
     response_class=FileResponse,
-    dependencies=[Depends(allowed_operations_for_all)],
+    dependencies=[Depends(allowed_operations_for_self)],
 )
 async def get_car_checked_out_reservations(
     car_id: UUID4 | int,
     session: AsyncSession = Depends(get_session),
 ):
     return await reports_reservations.get_car_checked_out_reservations(car_id, session)
-    # return FileResponse(
-    #     REPORTS_DIR,
-    #     media_type="text/csv",
-    #     filename="report.csv",
-    #     status_code=200,
-    # )
