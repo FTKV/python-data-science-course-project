@@ -4,9 +4,14 @@ from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
+STATIC_DIR = BASE_DIR / "static"
+REPORTS_DIR = STATIC_DIR / "reports"
+
+
 class Settings(BaseSettings):
     model_config = ConfigDict(
-        env_file=pathlib.Path(__file__).resolve().parent.parent.parent.parent / ".env",
+        env_file=BASE_DIR.parent / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
