@@ -2,23 +2,20 @@
 Module of events' routes
 """
 
+from datetime import datetime, timezone
 from pydantic import UUID4
-from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, status, Query
-from redis.asyncio.client import Redis
-from sqlalchemy.engine.result import ScalarResult
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.connect_db import get_session, get_redis_db1
-from src.database.models import Event, Role, Status
+from src.database.connect_db import get_session
+from src.database.models import Role, Status
 from src.repository import cars as repository_cars
 from src.repository import events as repository_events
 from src.repository import parking_spots as repository_parking_spots
 from src.repository import rates as repository_rates
 from src.repository import reservations as repository_reservations
 from src.services.ai_models import process_image
-from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 from src.schemas.cars import CarRecognizedPlateModel
 from src.schemas.events import EventModel, EventImageModel, EventDB
@@ -109,6 +106,7 @@ async def create_event(
             )
         data = ReservationUpdateModel(
             resv_status=event_type,
+            end_date=datetime.now(timezone.utc),
             user_id=car.user_id,
         )
         reservation = await repository_reservations.update_reservation(

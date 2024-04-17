@@ -3,7 +3,6 @@ Main module
 """
 
 from contextlib import asynccontextmanager
-import pathlib
 import sys
 from time import time
 
@@ -18,7 +17,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
 
-from src.conf.config import settings
+from src.conf.config import STATIC_DIR, settings
 from src.database.connect_db import engine, get_session, redis_db0, pool_redis_db
 from src.routes import (
     auth,
@@ -243,10 +242,6 @@ async def healthchecker(session: AsyncSession = Depends(get_session)):
             detail="Error connecting to the database",
         )
     return {"message": "OK"}
-
-
-BASE_DIR = pathlib.Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
 
 
 class StaticFilesCache(StaticFiles):

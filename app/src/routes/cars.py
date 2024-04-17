@@ -11,8 +11,10 @@ from redis.asyncio.client import Redis
 from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.conf.config import REPORTS_DIR
 from src.database.connect_db import get_session, get_redis_db1
 from src.database.models import User, Role
+from src.reports import reservations as reports_reservations
 from src.repository import cars as repository_cars
 from src.schemas.cars import (
     CarUnrecognizedPlateModel,
@@ -178,3 +180,21 @@ async def block_or_unblock_car(
         )
     car = await repository_cars.block_or_unblock_car(car_id, body.is_to_block, session)
     return car
+
+
+@router.get(
+    "/{car_id}/reservations",
+    response_class=FileResponse,
+    dependencies=[Depends(allowed_operations_for_all)],
+)
+async def get_car_checked_out_reservations(
+    car_id: UUID4 | int,
+    session: AsyncSession = Depends(get_session),
+):
+    return await reports_reservations.get_car_checked_out_reservations(car_id, session)
+    # return FileResponse(
+    #     REPORTS_DIR,
+    #     media_type="text/csv",
+    #     filename="report.csv",
+    #     status_code=200,
+    # )
