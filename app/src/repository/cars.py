@@ -2,6 +2,8 @@
 Module of cars' CRUD
 """
 
+from typing import List
+
 from sqlalchemy import select, UUID
 from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -179,3 +181,22 @@ async def is_car_blocked(plate: str, session: AsyncSession) -> bool | None:
     car = await read_car_by_plate(plate, session)
     if car:
         return car.is_blocked
+
+
+async def read_cars_by_username(
+    username: str,
+    session: AsyncSession,
+) -> List[Car] | None:
+    """
+    Gets all user's cars.
+
+    :param username: The username of the user to get cars.
+    :type username: str
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The user's cars, or None if they don't exist.
+    :rtype: List[Car] | None
+    """
+    stmt = select(Car).join(User).filter(User.username == username)
+    cars = await session.execute(stmt)
+    return cars.scalars()
