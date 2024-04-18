@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 import sys
 from time import time
 
+from alembic.config import Config
+from alembic import command
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -30,6 +32,11 @@ from src.routes import (
     rates,
 )
 from src.services.scheduler import scheduler
+
+
+def run_migrations():
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
 
 
 @asynccontextmanager
@@ -62,6 +69,7 @@ async def startup():
     await pool_redis_db.disconnect()
     await redis_db0.flushall()
     await FastAPILimiter.init(redis_db0)
+    run_migrations()
     scheduler.start()
     return True
 
