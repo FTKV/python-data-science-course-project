@@ -70,37 +70,6 @@ async def get_reservation(
     return reservation
 
 
-@router.get(
-    "",
-    response_model=List[ReservationModel],
-    dependencies=[Depends(allowed_operations_for_self)],
-)
-async def get_user_reservations(
-    offset: int = 0,
-    limit: int = 10,
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(auth_service.get_current_user),
-):
-    """
-    Get reservations for the current user.
-
-    Args:
-        offset (int): Offset for pagination.
-        limit (int): Limit for pagination.
-        session (AsyncSession): Database session.
-        current_user (User): Current user.
-
-    Returns:
-        List[ReservationModel]: List of reservations for the current user.
-    """
-    if allowed_operations_for_self.has_access(current_user):
-        return await reservations.get_reservations_by_user_id(
-            current_user.id, offset, limit, session
-        )
-    else:
-        raise HTTPException(status_code=403, detail="Permission denied")
-
-
 @router.put(
     "/{reservation_id}",
     response_model=ReservationModel,

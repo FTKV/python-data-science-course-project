@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
-
+import os
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
@@ -38,6 +38,7 @@ def run_migrations():
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
     print("ccc")
+    return None
 
 
 @asynccontextmanager
@@ -70,8 +71,9 @@ async def startup():
     await pool_redis_db.disconnect()
     await redis_db0.flushall()
     await FastAPILimiter.init(redis_db0)
-    await run_migrations()
+    os.system("alembic upgrade head")
     scheduler.start()
+    print("aaa")
     return True
 
 
