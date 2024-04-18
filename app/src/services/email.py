@@ -2,7 +2,6 @@
 Module of email sending functions
 """
 
-
 from pathlib import Path
 
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
@@ -93,5 +92,35 @@ async def send_email_for_password_reset(
 
         fm = FastMail(conf)
         await fm.send_message(message, template_name="password_reset_email.html")
+    except ConnectionErrors as error_message:
+        print(f"Connection error: {str(error_message)}")
+
+
+async def send_email_for_limit_warning(email: EmailStr, username: str, balance: float):
+    """
+    Sends an email for the user's limit warning.
+
+    :param email: The email to send message.
+    :type email: EmailStr
+    :param username: The user's username.
+    :type username: User
+    :param balance: The actual user's balance.
+    :type balance: float
+    :return: None.
+    :rtype: None
+    """
+    try:
+        message = MessageSchema(
+            subject="Limit warning",
+            recipients=[email],
+            template_body={
+                "username": username,
+                "balance": balance,
+            },
+            subtype=MessageType.html,
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message, template_name="limit_warning.html")
     except ConnectionErrors as error_message:
         print(f"Connection error: {str(error_message)}")

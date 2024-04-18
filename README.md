@@ -1,3 +1,8 @@
+# Python Data Science course project
+
+The task (in Ukrainian):
+https://docs.google.com/document/d/1XosiR4hKvPGQygrghGGTZAT_ntAiVPNxkJOz8i71kB0
+
 ## Getting started
 
 This guide will take you through the steps to set up and run the project on your device.
@@ -15,7 +20,7 @@ Steps to install the project in a standart way:
 4. Create, fill with settings file `.env` with following format:
 
 ```
-API_NAME=Caras/MachineFlow
+API_NAME=Caras-MachineFlow
 API_PROTOCOL=http
 API_HOST=127.0.0.1
 API_PORT=8000
@@ -29,13 +34,13 @@ DRIVER_ASYNC=asyncpg
 POSTGRES_DB=...
 POSTGRES_USER=${POSTGRES_DB}
 POSTGRES_PASSWORD=...
-POSTGRES_HOST=${API_HOST}
+POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 SQLALCHEMY_DATABASE_URL_SYNC=${DATABASE}+${DRIVER_SYNC}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
 SQLALCHEMY_DATABASE_URL_ASYNC=${DATABASE}+${DRIVER_ASYNC}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
 
 REDIS_PROTOCOL=redis
-REDIS_HOST=${API_HOST}
+REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_USER=...
 REDIS_PASSWORD=...
@@ -43,6 +48,7 @@ REDIS_URL=${REDIS_PROTOCOL}://${REDIS_USER}:${REDIS_PASSWORD}@${REDIS_HOST}:${RE
 REDIS_EXPIRE=3600
 REDIS_DB_FOR_RATE_LIMITER=0
 REDIS_DB_FOR_OBJECTS=1
+REDIS_DB_FOR_APSCHEDULER=2
 
 RATE_LIMITER_TIMES=2
 RATE_LIMITER_SECONDS=5

@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
 STATIC_DIR = BASE_DIR / "static"
-REPORTS_DIR = STATIC_DIR / "reports"
+REPORTS_DIR = BASE_DIR / "reports"
 
 
 class Settings(BaseSettings):
@@ -24,10 +24,14 @@ class Settings(BaseSettings):
     algorithm: str
     sqlalchemy_database_url_sync: str
     sqlalchemy_database_url_async: str
+    redis_host: str
+    redis_port: int
+    redis_password: str
     redis_url: str
     redis_expire: int
     redis_db_for_rate_limiter: int
     redis_db_for_objects: int
+    redis_db_for_apscheduler: int
     rate_limiter_times: int
     rate_limiter_seconds: int
     mail_server: str

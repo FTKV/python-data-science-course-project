@@ -2,13 +2,12 @@
 Module of users' CRUD
 """
 
-
 import pickle
 
 from libgravatar import Gravatar
 from pydantic import EmailStr
 from redis.asyncio.client import Redis
-from sqlalchemy import select, func
+from sqlalchemy import UUID, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.conf.config import settings
@@ -76,6 +75,22 @@ async def get_user_by_username(username: str, session: AsyncSession) -> User | N
     :rtype: User | None
     """
     stmt = select(User).filter(func.lower(User.username) == func.lower(username))
+    user = await session.execute(stmt)
+    return user.scalar()
+
+
+async def get_user_by_id(user_id: UUID | int, session: AsyncSession) -> User | None:
+    """
+    Gets an user with the specified username.
+
+    :param user_id: The ID of the user to get.
+    :type user_id: UUID | int
+    :param session: The database session.
+    :type session: AsyncSession
+    :return: The user with the specified ID, or None if it does not exist.
+    :rtype: User | None
+    """
+    stmt = select(User).filter(User.id == user_id)
     user = await session.execute(stmt)
     return user.scalar()
 
