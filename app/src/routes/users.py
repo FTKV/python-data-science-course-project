@@ -15,10 +15,12 @@ from src.database.connect_db import get_session, get_redis_db1
 from src.database.models import User, Role
 from src.reports import reservations as reports_reservations
 from src.repository import cars as repository_cars
+from src.repository import reservations as repository_reservations
 from src.repository import users as repository_users
 from src.services.auth import auth_service
 from src.services.roles import RoleAccess
 from src.schemas.cars import CarResponse
+from src.schemas.reservations import ReservationModel
 from src.schemas.users import UserDb, UserUpdateModel, UserSetRoleModel
 
 
@@ -225,4 +227,32 @@ async def get_user_checked_out_reservations(
 ):
     return await reports_reservations.get_user_checked_out_reservations(
         username, session
+    )
+
+
+@router.get(
+    "",
+    response_model=List[ReservationModel],
+    dependencies=[Depends(allowed_operations_for_self)],
+)
+async def get_user_reservations(
+    offset: int = 0,
+    limit: int = 10,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    """
+    Get reservations for the current user.
+
+    Args:
+        offset (int): Offset for pagination.
+        limit (int): Limit for pagination.
+        session (AsyncSession): Database session.
+        current_user (User): Current user.
+
+    Returns:
+        List[ReservationModel]: List of reservations for the current user.
+    """
+    return await repository_reservations.get_reservations_by_user_id(
+        current_user.id, offset, limit, session
     )
