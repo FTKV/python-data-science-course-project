@@ -33,7 +33,7 @@ class CarUnrecognizedPlateModel(BaseModel):
 
 @as_form
 class CarRecognizedPlateModel(BaseModel):
-    plate: str = Field(min_length=5, max_length=32)
+    plate: str = Field(min_length=3, max_length=32)
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
@@ -57,7 +57,7 @@ class CarResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID4 | int
-    plate: str = Field(min_length=5, max_length=32)
+    plate: str = Field(min_length=3, max_length=32)
     model: Annotated[str | None, Field(max_length=128)] = None
     color: Annotated[str | None, Field(max_length=32)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
