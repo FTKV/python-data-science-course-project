@@ -276,7 +276,7 @@ async def get_all_parking_spots_route(
     Raises:
         HTTPException: If there is an error while retrieving parking spots.
     """
-    parking_spots = await get_all_parking_spots(session, offset=offset, limit=limit)
+    parking_spots = await get_all_parking_spots(offset, limit, session)
     return [
         {"user": parking_spot, "message": "Parking spot retrieved successfully"}
         for parking_spot in parking_spots

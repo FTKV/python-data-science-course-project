@@ -15,14 +15,12 @@ Steps to install the project in a standart way:
 
 2. Go to the project directory: `cd python-data-science-course-project`
 
-3. Run `poetry shell` and `poetry install`
-
-4. Create, fill with settings file `.env` with following format:
+3. Create, fill with settings file `.env` with following format:
 
 ```
 API_NAME=Caras-MachineFlow
 API_PROTOCOL=http
-API_HOST=127.0.0.1
+API_HOST=0.0.0.0
 API_PORT=8000
 
 SECRET_KEY_LENGTH=64
@@ -72,10 +70,10 @@ TENSORFLOW_PORT=8001
 TEST=False
 ```
 
-5. If you want to run the project locally and you already have running instances of Postgres DB and Redis DB then go to next point. Otherwise, you can run Postgres DB and Redis DB with Docker by `docker-compose --env-file .env up -d`
+4. Run Postgres DB, Redis DB, CV app and main app with Docker by `docker-compose up -d`
 
-6. Go to app folder `cd app` and run `alembic upgrade head`
-
-7. Run `python main.py` and open http://127.0.0.1:8000 or http://127.0.0.1:8000/docs to open the project's Swagger documentation (The API protocol, host and port you can change with .env)
+5. Open http://127.0.0.1:8000 or http://127.0.0.1:8000/docs to open the project's Swagger documentation (The API protocol, host and port you can change with .env)
 
 ### The authors
+
+Identity team

@@ -4,7 +4,7 @@ Main module
 
 from contextlib import asynccontextmanager
 import sys
-from time import time
+from time import time, sleep
 
 from alembic.config import Config
 from alembic import command
@@ -37,6 +37,7 @@ from src.services.scheduler import scheduler
 def run_migrations():
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
+    print("ccc")
 
 
 @asynccontextmanager
@@ -69,7 +70,7 @@ async def startup():
     await pool_redis_db.disconnect()
     await redis_db0.flushall()
     await FastAPILimiter.init(redis_db0)
-    run_migrations()
+    await run_migrations()
     scheduler.start()
     return True
 
