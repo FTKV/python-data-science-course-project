@@ -16,6 +16,8 @@ RUN poetry config virtualenvs.create false && poetry install --only main
 
 # Скопіюємо інші файли в робочу директорію контейнера
 COPY app/ $APP_HOME/
+#RUN alembic revision --autogenerate -m 'Init'
+#RUN alembic upgrade head
 
 # Позначимо порт, де працює програма всередині контейнера
 EXPOSE 8000

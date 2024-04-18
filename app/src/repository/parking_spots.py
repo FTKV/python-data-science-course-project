@@ -29,8 +29,12 @@ async def create_parking_spot(
     parking_spot = ParkingSpot(**body.model_dump(), user_id=user.id)
     stmt = select(ParkingSpot).filter(ParkingSpot.title == parking_spot.title)
     existing_parking_spot = await session.execute(stmt)
+    existing_parking_spot = existing_parking_spot.scalar()
     if existing_parking_spot is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The parking spot already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The parking spot already exists",
+        )
     session.add(parking_spot)
     await session.commit()
     return parking_spot
@@ -55,7 +59,9 @@ async def get_parking_spot_by_id(
 
 
 async def update_parking_spot(
-    parking_spot_id: UUID | int, new_parking_spot: ParkingSpotUpdate, session: AsyncSession
+    parking_spot_id: UUID | int,
+    new_parking_spot: ParkingSpotUpdate,
+    session: AsyncSession,
 ) -> ParkingSpot:
     """
     Update a parking spot in the database.
@@ -129,7 +135,9 @@ async def update_parking_spot_service_status(
     return None
 
 
-async def delete_parking_spot(parking_spot_id: UUID | int, session: AsyncSession) -> bool:
+async def delete_parking_spot(
+    parking_spot_id: UUID | int, session: AsyncSession
+) -> bool:
     """
     Delete a parking spot from the database.
 
@@ -148,7 +156,9 @@ async def delete_parking_spot(parking_spot_id: UUID | int, session: AsyncSession
     return False
 
 
-async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
+async def get_all_parking_spots(
+    offset: int, limit: int, session: AsyncSession
+) -> List[ParkingSpot]:
     """
     Retrieve all parking spots from the database.
 
@@ -159,8 +169,9 @@ async def get_all_parking_spots(session: AsyncSession) -> List[ParkingSpot]:
         List[ParkingSpotDB]: A list of all parking spot objects.
     """
     stmt = select(ParkingSpot)
-    parking_spots = session.execute(stmt)
-    return await parking_spots
+    stmt = stmt.offset(offset).limit(limit)
+    parking_spots = await session.execute(stmt)
+    return parking_spots.scalars()
 
 
 async def get_all_occupied_parking_spots(session: AsyncSession) -> List[ParkingSpot]:

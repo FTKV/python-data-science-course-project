@@ -17,7 +17,7 @@ async def process_image(img_file):
     :rtype: str
     """
     client = AsyncClient(
-        base_url=f"{settings.api_protocol}://{settings.api_host}:{settings.tensorflow_port}",
+        base_url=f"{settings.api_protocol}://{settings.tensorflow_container_name}:{settings.tensorflow_port}",
     )
     response = await client.post(
         "/process_image",
