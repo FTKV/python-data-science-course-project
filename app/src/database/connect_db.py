@@ -21,7 +21,10 @@ engine: AsyncEngine = create_async_engine(
 )
 
 AsyncDBSession = async_sessionmaker(
-    engine, autoflush=False, expire_on_commit=False, class_=AsyncSession
+    engine,
+    autoflush=False,
+    expire_on_commit=False,
+    class_=AsyncSession,
 )
 
 
