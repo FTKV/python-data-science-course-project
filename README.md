@@ -1,4 +1,4 @@
-# Python Data Science course project
+# Caras/MachineFlow
 
 The task (in Ukrainian):
 https://docs.google.com/document/d/1XosiR4hKvPGQygrghGGTZAT_ntAiVPNxkJOz8i71kB0
